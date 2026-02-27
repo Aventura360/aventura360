@@ -308,12 +308,13 @@ textarea.inp{min-height:72px;resize:vertical}
 @media(max-width:600px){
 
   /* Topbar */
-  .topbar{height:auto;padding:8px 12px;flex-wrap:wrap;gap:6px}
-  .logo-wrapper{width:auto;transform:scale(0.82);transform-origin:left center;margin-right:auto}
-  .topbar-right{gap:5px;flex-wrap:wrap}
-  .topbar-right .badge{font-size:10px;padding:3px 7px}
-  .topbar-right .btn-sm{font-size:11px;padding:4px 8px}
-  #btnToggleAmounts{display:none} /* se mueve a menú */
+  .topbar{height:52px;padding:0 10px;flex-wrap:nowrap;gap:6px;overflow:hidden}
+  .logo-wrapper{transform:scale(0.62);transform-origin:left center;flex-shrink:0;margin-right:auto;width:200px}
+  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
+  .topbar-right .badge{font-size:10px;padding:2px 6px}
+  .topbar-right .btn-sm{font-size:10px;padding:3px 7px;white-space:nowrap}
+  #btnToggleAmounts{font-size:10px;padding:3px 7px}
+  #btnSync{font-size:10px;padding:3px 7px}
 
   /* Container */
   .container{padding:10px}
@@ -324,9 +325,9 @@ textarea.inp{min-height:72px;resize:vertical}
   .trip-label{display:none}
 
   /* Nav tabs: scrollable horizontal */
-  .nav-tabs{gap:2px;padding:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .nav-tabs{gap:2px;padding:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;display:flex}
   .nav-tabs::-webkit-scrollbar{display:none}
-  .nav-tab{flex-shrink:0;padding:7px 10px;font-size:12px;white-space:nowrap}
+  .nav-tab{flex-shrink:0;padding:6px 10px;font-size:11px;white-space:nowrap}
 
   /* Stats grid: 2 columnas */
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
@@ -414,18 +415,18 @@ textarea.inp{min-height:72px;resize:vertical}
 .mnav-btn.active{color:var(--blue)}
 
 @media(max-width:600px){
-  .mobile-nav{display:flex}
-  .nav-tabs{display:none} /* hide top tabs on mobile, use bottom nav */
-  .container{padding-bottom:72px} /* space for bottom nav */
+  .mobile-nav{display:none} /* keep top tabs for now */
+  .container{padding-bottom:16px}
 }
 
 /* ════════════════════════════════════════
    RESPONSIVE — MÓVIL PEQUEÑO (≤380px)
 ════════════════════════════════════════ */
 @media(max-width:380px){
-  .nav-tab{font-size:11px;padding:6px 8px}
-  .stat-val{font-size:16px}
-  .logo-wrapper{transform:scale(0.72);transform-origin:left center}
+  .nav-tab{font-size:10px;padding:5px 7px}
+  .stat-val{font-size:15px}
+  .logo-wrapper{transform:scale(0.55);transform-origin:left center;width:180px}
+  .topbar-right .btn-sm span, .topbar-right .btn-sm{font-size:9px;padding:2px 5px}
 }
 </style>
 </head>
@@ -469,10 +470,10 @@ textarea.inp{min-height:72px;resize:vertical}
   </div>
   <div class="topbar-right">
     <span class="badge" id="connBadge">💾 Local</span>
-    <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes">💰 Con importes</button>
+    <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes">💰</button>
     <button class="btn btn-ghost btn-sm" onclick="App.resetAndDemo()">📋 Demo</button>
     <button class="btn btn-ghost btn-sm" onclick="Sheets.openConfig()">🔗 Sheets</button>
-    <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none">☁️ Sync</button>
+    <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none" title="Sincronizar con Sheets">☁️</button>
     <button class="btn btn-primary btn-sm" onclick="Trips.openModal()">+ Nuevo Viaje</button>
   </div>
 </div>
@@ -1005,7 +1006,8 @@ textarea.inp{min-height:72px;resize:vertical}
 // ── STATE ──────────────────────────────────────────────────────────
 // ── Formato numérico garantizado con punto de miles ──
 function fmtNum(n) {
-  const rounded = Math.round(Number(n) || 0);
+  const num = Number(String(n).replace(/\./g, '').replace(/,/g, '.'));
+  const rounded = Math.round(isNaN(num) ? 0 : num);
   return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
@@ -1408,7 +1410,7 @@ const App = {
   toggleAmounts() {
     State.showAmounts = !State.showAmounts;
     const btn = document.getElementById('btnToggleAmounts');
-    btn.textContent = State.showAmounts ? '💰 Con importes' : '🙈 Sin importes';
+    btn.textContent = State.showAmounts ? '💰' : '🙈';
     btn.style.color = State.showAmounts ? '' : 'var(--text3)';
     this.render();
     Charts.render();
@@ -2248,7 +2250,7 @@ const Sheets = {
   async sync() {
     if (!CFG.scriptUrl) { App.toast('Conecta Sheets primero', 'error'); return; }
     const btn = document.getElementById('btnSync');
-    btn.textContent = '⏳ Sincronizando…';
+    btn.textContent = '⏳';
     btn.disabled = true;
     try {
       // 1. Cargar desde Sheets
@@ -2263,7 +2265,7 @@ const Sheets = {
     } catch(e) {
       App.toast('Error al sincronizar: ' + e.message, 'error');
     } finally {
-      btn.textContent = '☁️ Sync';
+      btn.textContent = '☁️';
       btn.disabled = false;
     }
   },
