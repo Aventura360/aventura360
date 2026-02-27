@@ -309,7 +309,15 @@ textarea.inp{min-height:72px;resize:vertical}
 
   /* Topbar */
   .topbar{height:52px;padding:0 10px;flex-wrap:nowrap;gap:6px;overflow:hidden}
-  .logo-wrapper{transform:scale(0.62);transform-origin:left center;flex-shrink:0;margin-right:auto;width:200px}
+  .logo-wrapper{flex-shrink:0;margin-right:auto;width:auto}
+  .logo-svg-layer{display:none} /* hide arc on mobile */
+  .logo-text-container{margin-top:0}
+  .txt-aventura{font-size:15px}
+  .txt-360{font-size:15px}
+  .logo-bottom-title{font-size:7px;letter-spacing:2px}
+  .logo-middle{display:none}
+  /* hide plane and globe spans on mobile */
+  .logo-wrapper > span{display:none}
   .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
   .topbar-right .badge{font-size:10px;padding:2px 6px}
   .topbar-right .btn-sm{font-size:10px;padding:3px 7px;white-space:nowrap}
@@ -375,7 +383,7 @@ textarea.inp{min-height:72px;resize:vertical}
 
   /* Act form */
   .act-form{padding:12px}
-  .itin-layout > div:last-child{order:-1} /* form above timeline on mobile */
+  /* form stays below timeline on mobile */
 
   /* Panels */
   .panel-body{padding:12px}
@@ -425,7 +433,8 @@ textarea.inp{min-height:72px;resize:vertical}
 @media(max-width:380px){
   .nav-tab{font-size:10px;padding:5px 7px}
   .stat-val{font-size:15px}
-  .logo-wrapper{transform:scale(0.55);transform-origin:left center;width:180px}
+  .txt-aventura{font-size:13px}
+  .txt-360{font-size:13px}
   .topbar-right .btn-sm span, .topbar-right .btn-sm{font-size:9px;padding:2px 5px}
 }
 </style>
@@ -469,9 +478,8 @@ textarea.inp{min-height:72px;resize:vertical}
     </div>
   </div>
   <div class="topbar-right">
-    <span class="badge" id="connBadge">💾 Local</span>
-    <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes">💰</button>
-    <button class="btn btn-ghost btn-sm" onclick="App.resetAndDemo()">📋 Demo</button>
+    <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes">💰 Importes</button>
+    <span class="badge" id="connBadge" style="display:none"></span>
     <button class="btn btn-ghost btn-sm" onclick="Sheets.openConfig()">🔗 Sheets</button>
     <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none" title="Sincronizar con Sheets">☁️</button>
     <button class="btn btn-primary btn-sm" onclick="Trips.openModal()">+ Nuevo Viaje</button>
@@ -1410,7 +1418,7 @@ const App = {
   toggleAmounts() {
     State.showAmounts = !State.showAmounts;
     const btn = document.getElementById('btnToggleAmounts');
-    btn.textContent = State.showAmounts ? '💰' : '🙈';
+    btn.textContent = State.showAmounts ? '💰 Importes' : '🙈 Ocultos';
     btn.style.color = State.showAmounts ? '' : 'var(--text3)';
     this.render();
     Charts.render();
@@ -1807,9 +1815,14 @@ const Itin = {
     const days = this.getDays(t);
     const dayNum = days.indexOf(State.currentDay) + 1;
     document.getElementById('dhTitle').textContent = 'Día ' + dayNum;
-    // Show custom day label if set
-    const dayLabel = t.dayLabels && t.dayLabels[State.currentDay] ? ' · ' + t.dayLabels[State.currentDay] : '';
-    document.getElementById('dhDate').textContent  = new Date(State.currentDay + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) + dayLabel;
+    const dateStr = new Date(State.currentDay + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    const dayLabel = t.dayLabels && t.dayLabels[State.currentDay];
+    const dhDate = document.getElementById('dhDate');
+    if (dayLabel) {
+      dhDate.innerHTML = `<span style="color:var(--text2)">${dateStr}</span> <span style="background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;font-size:14px;letter-spacing:.3px"> · ${dayLabel}</span>`;
+    } else {
+      dhDate.textContent = dateStr;
+    }
 
     const acts = DB.activities
       .filter(a => a.viaje_id === t.id && a.fecha === State.currentDay)
@@ -2335,10 +2348,10 @@ const Sheets = {
     if (connected) {
       badge.textContent = '● Sheets';
       badge.style.color = 'var(--green)';
+      badge.style.display = '';
       sync.style.display = '';
     } else {
-      badge.textContent = '💾 Local';
-      badge.style.color = '';
+      badge.style.display = 'none';
       sync.style.display = 'none';
     }
   },
