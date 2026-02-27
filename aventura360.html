@@ -290,12 +290,142 @@ textarea.inp{min-height:72px;resize:vertical}
 .status-msg.err{background:rgba(244,91,122,.1);border:1px solid rgba(244,91,122,.3);color:var(--red);display:block}
 .status-msg.loading{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);color:var(--blue);display:block}
 
-@media(max-width:600px){
-  .container{padding:12px}
-  .stats-grid{grid-template-columns:1fr 1fr}
+/* ════════════════════════════════════════
+   RESPONSIVE — TABLET (≤768px)
+════════════════════════════════════════ */
+@media(max-width:768px){
+  .charts-grid{grid-template-columns:1fr}
   .itin-layout{grid-template-columns:1fr}
   .layout2{grid-template-columns:1fr}
+  .bvr-cat{width:80px;font-size:11px}
+  .bvr-val{width:60px;font-size:10px}
+  .modal{padding:20px}
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — MÓVIL (≤600px)
+════════════════════════════════════════ */
+@media(max-width:600px){
+
+  /* Topbar */
+  .topbar{height:auto;padding:8px 12px;flex-wrap:wrap;gap:6px}
+  .logo-wrapper{width:auto;transform:scale(0.82);transform-origin:left center;margin-right:auto}
+  .topbar-right{gap:5px;flex-wrap:wrap}
+  .topbar-right .badge{font-size:10px;padding:3px 7px}
+  .topbar-right .btn-sm{font-size:11px;padding:4px 8px}
+  #btnToggleAmounts{display:none} /* se mueve a menú */
+
+  /* Container */
+  .container{padding:10px}
+
+  /* Trip bar */
+  .trip-bar{padding:8px 10px;gap:6px}
+  .trip-sel{font-size:13px;padding:6px 10px}
+  .trip-label{display:none}
+
+  /* Nav tabs: scrollable horizontal */
+  .nav-tabs{gap:2px;padding:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .nav-tabs::-webkit-scrollbar{display:none}
+  .nav-tab{flex-shrink:0;padding:7px 10px;font-size:12px;white-space:nowrap}
+
+  /* Stats grid: 2 columnas */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .stat-card{padding:12px}
+  .stat-icon{font-size:20px;margin-bottom:4px}
+  .stat-val{font-size:18px}
+  .stat-label{font-size:9px}
+
+  /* Currency bar */
+  .currency-bar{padding:8px 10px;gap:6px}
+  .rate-info{display:none}
+
+  /* Layout 2 col */
+  .layout2{grid-template-columns:1fr}
   .frow{grid-template-columns:1fr}
+
+  /* Expense table: card layout */
+  .exp-table thead{display:none}
+  .exp-table tr{display:block;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;padding:10px 12px;background:var(--s1)}
+  .exp-table td{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border:none;font-size:12px}
+  .exp-table td:first-child{font-weight:600;font-size:13px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px}
+  .exp-table td::before{content:attr(data-label);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-right:8px}
+
+  /* Cat tabs */
+  .cat-tabs{padding:8px 10px 0;gap:3px}
+  .cat-tab{padding:5px 9px;font-size:11px}
+
+  /* Day nav chips */
+  .day-chip{min-width:56px;padding:7px 10px}
+  .day-chip .dc-num{font-size:14px}
+
+  /* Day header */
+  .day-header-card{padding:10px 12px;gap:6px}
+  .day-header-num{font-size:22px}
+  .day-header-date{font-size:11px}
+  .dhs .n{font-size:15px}
+  .day-header-card > div:last-child{width:100%;justify-content:flex-start}
+
+  /* Timeline */
+  .tl-item{gap:10px;padding:10px 8px 10px 0}
+  .tl-dot{width:34px;height:34px;font-size:16px}
+  .tl-card{padding:10px 12px}
+  .tl-title{font-size:13px}
+  .tl-actions{opacity:1} /* always visible on mobile */
+
+  /* Act form */
+  .act-form{padding:12px}
+  .itin-layout > div:last-child{order:-1} /* form above timeline on mobile */
+
+  /* Panels */
+  .panel-body{padding:12px}
+  .panel-header{padding:10px 14px}
+
+  /* Charts */
+  .chart-card{padding:12px}
+  .bar-label{width:70px;font-size:10px}
+  .bar-val{width:55px;font-size:10px}
+
+  /* Budget vs real */
+  .bvr-row{flex-wrap:wrap;gap:8px;padding:10px 0}
+  .bvr-cat{width:100%;font-size:12px}
+  .bvr-val{width:55px;font-size:10px}
+
+  /* Modals */
+  .overlay{padding:10px;align-items:flex-end}
+  .modal{border-radius:16px 16px 0 0;max-height:85vh;padding:20px 16px}
+  .modal h2{font-size:17px}
+
+  /* Toasts */
+  #toasts{bottom:16px;right:12px;left:12px}
+  .toast{max-width:100%}
+
+  /* Resumen timeline */
+  .logo-wrapper{width:260px}
+
+  /* Share opts */
+  .share-opt{padding:10px}
+  .share-icon{font-size:20px;width:32px}
+}
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--s1);border-top:1px solid var(--border);padding:4px 0 env(safe-area-inset-bottom,4px)}
+.mnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:none;border:none;color:var(--text3);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:color .15s;font-family:'Inter',sans-serif}
+.mnav-btn span:first-child{font-size:18px}
+.mnav-btn.active{color:var(--blue)}
+
+@media(max-width:600px){
+  .mobile-nav{display:flex}
+  .nav-tabs{display:none} /* hide top tabs on mobile, use bottom nav */
+  .container{padding-bottom:72px} /* space for bottom nav */
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — MÓVIL PEQUEÑO (≤380px)
+════════════════════════════════════════ */
+@media(max-width:380px){
+  .nav-tab{font-size:11px;padding:6px 8px}
+  .stat-val{font-size:16px}
+  .logo-wrapper{transform:scale(0.72);transform-origin:left center}
 }
 </style>
 </head>
@@ -846,6 +976,25 @@ textarea.inp{min-height:72px;resize:vertical}
 <!-- TOAST CONTAINER -->
 <div id="toasts"></div>
 
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobileNav">
+  <button class="mnav-btn active" onclick="App.switchTabMobile('resumen',this)">
+    <span>🏠</span><span>Resumen</span>
+  </button>
+  <button class="mnav-btn" onclick="App.switchTabMobile('itinerario',this)">
+    <span>🗓</span><span>Itinerario</span>
+  </button>
+  <button class="mnav-btn" onclick="App.switchTabMobile('gastos',this)">
+    <span>💸</span><span>Gastos</span>
+  </button>
+  <button class="mnav-btn" onclick="App.switchTabMobile('graficas',this)">
+    <span>📊</span><span>Gráficas</span>
+  </button>
+  <button class="mnav-btn" onclick="App.switchTabMobile('presupuesto',this)">
+    <span>🎯</span><span>Pres.</span>
+  </button>
+</nav>
+
 <script>
 // ═══════════════════════════════════════════════════════════════════
 // AVENTURA360 — Complete rewrite
@@ -984,6 +1133,15 @@ const App = {
 
   currentTrip() {
     return DB.trips.find(t => t.id === State.tripId) || null;
+  },
+
+  switchTabMobile(name, el) {
+    // Sync top tabs
+    const topTab = document.querySelector(`.nav-tab[onclick*="'${name}'"]`);
+    if (topTab) this.switchTab(name, topTab);
+    // Update bottom nav
+    document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
   },
 
   switchTab(name, el) {
@@ -1432,15 +1590,15 @@ const Expenses = {
         const dispAmt = toDisplay(e.importe, e.moneda);
         const originalAmt = State.showAmounts && e.moneda !== State.displayCur ? ` <span style="font-size:10px;color:var(--text3)">(${fmtNum(e.importe)} ${e.moneda})</span>` : '';
         return `<tr>
-          <td>
+          <td data-label="">
             <div style="font-weight:600">${App.esc(e.descripcion)}</div>
             ${e.proveedor ? `<div style="font-size:11px;color:var(--text2)">${App.esc(e.proveedor)}${e.referencia ? ' · ' + App.esc(e.referencia) : ''}</div>` : ''}
           </td>
-          <td><span class="cat-pill" style="background:${c.color}22;color:${c.color}">${c.icon} ${c.label}</span></td>
-          <td><span class="status-dot ${statusClass}">${e.estado || 'pendiente'}</span></td>
-          <td><span class="mono">${State.showAmounts ? fmt(dispAmt) : '···'}</span>${originalAmt}</td>
-          <td style="color:var(--text2);font-size:12px">${e.fecha || '—'}</td>
-          <td>
+          <td data-label="Categoría"><span class="cat-pill" style="background:${c.color}22;color:${c.color}">${c.icon} ${c.label}</span></td>
+          <td data-label="Estado"><span class="status-dot ${statusClass}">${e.estado || 'pendiente'}</span></td>
+          <td data-label="Importe"><span class="mono">${State.showAmounts ? fmt(dispAmt) : '···'}</span>${originalAmt}</td>
+          <td data-label="Fecha" style="color:var(--text2);font-size:12px">${e.fecha || '—'}</td>
+          <td data-label="">
             <div style="display:flex;gap:4px">
               <button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
               <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>
