@@ -308,21 +308,13 @@ textarea.inp{min-height:72px;resize:vertical}
 @media(max-width:600px){
 
   /* Topbar */
-  .topbar{height:52px;padding:0 10px;flex-wrap:nowrap;gap:6px;overflow:hidden}
-  .logo-wrapper{flex-shrink:0;margin-right:auto;width:auto}
-  .logo-svg-layer{display:none} /* hide arc on mobile */
-  .logo-text-container{margin-top:0}
-  .txt-aventura{font-size:15px}
-  .txt-360{font-size:15px}
-  .logo-bottom-title{font-size:7px;letter-spacing:2px}
-  .logo-middle{display:none}
-  /* hide plane and globe spans on mobile */
-  .logo-wrapper > span{display:none}
-  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
-  .topbar-right .badge{font-size:10px;padding:2px 6px}
-  .topbar-right .btn-sm{font-size:10px;padding:3px 7px;white-space:nowrap}
-  #btnToggleAmounts{font-size:10px;padding:3px 7px}
-  #btnSync{font-size:10px;padding:3px 7px}
+  .topbar{height:52px;padding:0 10px;flex-wrap:nowrap;gap:6px}
+  .logo-wrapper{display:none}       /* hide desktop logo */
+  .logo-mobile{display:flex}        /* show mobile logo */
+  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0;margin-left:auto}
+  .topbar-right .btn-sm{font-size:11px;padding:4px 9px;white-space:nowrap}
+  #btnToggleAmounts{font-size:11px;padding:4px 9px}
+  #connBadge{font-size:10px;padding:2px 6px}
 
   /* Container */
   .container{padding:10px}
@@ -416,6 +408,14 @@ textarea.inp{min-height:72px;resize:vertical}
   .share-icon{font-size:20px;width:32px}
 }
 
+/* ── MOBILE LOGO ── */
+.logo-mobile{display:none;position:relative;align-items:center;flex-shrink:0;height:36px;width:140px;margin-right:auto}
+.logo-mobile-plane{position:absolute;left:6px;top:2px;font-size:12px;transform:rotate(-35deg);filter:drop-shadow(0 0 4px rgba(79,142,247,.9));z-index:3}
+.logo-mobile-globe{position:absolute;right:2px;bottom:0;font-size:11px;filter:drop-shadow(0 0 4px rgba(124,92,250,.8));z-index:3}
+.logo-mobile-text{position:relative;z-index:2;display:flex;align-items:baseline;gap:0;padding-left:24px;margin-top:8px}
+.logo-mobile-a{font-size:14px;font-weight:900;letter-spacing:.5px;background:linear-gradient(90deg,#4f8ef7,#7c5cfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-mobile-3{font-size:14px;font-weight:900;background:linear-gradient(90deg,#7c5cfa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
 /* ── MOBILE BOTTOM NAV ── */
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--s1);border-top:1px solid var(--border);padding:4px 0 env(safe-area-inset-bottom,4px)}
 .mnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:none;border:none;color:var(--text3);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:color .15s;font-family:'Inter',sans-serif}
@@ -477,12 +477,30 @@ textarea.inp{min-height:72px;resize:vertical}
       <div class="logo-bottom-title">Planificador de Viajes</div>
     </div>
   </div>
+  <!-- LOGO MÓVIL (solo visible en móvil) -->
+  <div class="logo-mobile">
+    <svg viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:120px;height:28px;overflow:visible">
+      <defs>
+        <linearGradient id="mgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#4f8ef7"/>
+          <stop offset="100%" stop-color="#7c5cfa" stop-opacity="0.85"/>
+        </linearGradient>
+      </defs>
+      <path d="M 14 20 Q 62 2 110 20" stroke="url(#mgGrad)" stroke-width="1.2" fill="none" stroke-dasharray="2 3" stroke-linecap="round" style="animation:trailPulse 2.8s ease-in-out infinite"/>
+    </svg>
+    <span class="logo-mobile-plane">✈</span>
+    <div class="logo-mobile-text">
+      <span class="logo-mobile-a">AVENTURA</span><span class="logo-mobile-3">360</span>
+    </div>
+    <span class="logo-mobile-globe">🌍</span>
+  </div>
+
   <div class="topbar-right">
     <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes">💰 Importes</button>
     <span class="badge" id="connBadge" style="display:none"></span>
-    <button class="btn btn-ghost btn-sm" onclick="Sheets.openConfig()">🔗 Sheets</button>
+    <button class="btn btn-ghost btn-sm" onclick="Sheets.openConfig()">🔗</button>
     <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none" title="Sincronizar con Sheets">☁️</button>
-    <button class="btn btn-primary btn-sm" onclick="Trips.openModal()">+ Nuevo Viaje</button>
+    <button class="btn btn-primary btn-sm" onclick="Trips.openModal()">＋</button>
   </div>
 </div>
 
@@ -2374,10 +2392,10 @@ const Share = {
     const opts = document.getElementById('shareOptions');
     const html = this.buildHTML(t);
     opts.innerHTML = [
-      { icon: '📋', name: 'Copiar al portapapeles', desc: 'Texto enriquecido con emojis', action: `Share._copy()` },
-      { icon: '💬', name: 'WhatsApp', desc: 'Abre WhatsApp con el itinerario', action: `Share._whatsapp()` },
-      { icon: '📧', name: 'Email', desc: 'Abre tu cliente de correo', action: `Share._email()` },
-      { icon: '🌐', name: 'Vista previa / Guardar HTML', desc: 'Abre página con diseño completo de la app', action: `Share._preview()` },
+      { icon: '🌐', name: 'Ver y guardar HTML', desc: 'Diseño completo igual que la app — guarda como archivo para compartir', action: `Share._preview()` },
+      { icon: '💬', name: 'WhatsApp', desc: 'Envía el itinerario por WhatsApp', action: `Share._whatsapp()` },
+      { icon: '📧', name: 'Email', desc: 'Abre tu cliente de correo con el itinerario', action: `Share._email()` },
+      { icon: '📋', name: 'Copiar texto', desc: 'Texto plano con emojis para pegar en cualquier app', action: `Share._copy()` },
     ].map(o => `<div class="share-opt" onclick="${o.action}">
       <div class="share-icon">${o.icon}</div>
       <div class="share-info"><div class="name">${o.name}</div><div class="desc">${o.desc}</div></div>
@@ -2463,9 +2481,28 @@ const Share = {
 
   _preview() {
     App.closeModal('dlgShare');
+    const t = App.currentTrip();
+    const filename = (t ? t.nombre.replace(/[^a-z0-9]/gi,'_') : 'itinerario') + '.html';
+    // Add download button to the HTML
+    const downloadBtn = `<div style="position:fixed;bottom:20px;right:20px;z-index:999">
+      <a href="data:text/html;charset=utf-8,${encodeURIComponent(this._html)}" 
+         download="${filename}"
+         style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#4f8ef7,#7c5cfa);color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;font-family:Inter,sans-serif;font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(79,142,247,.4)">
+        ⬇ Descargar HTML
+      </a>
+    </div>`;
+    const htmlWithBtn = this._html.replace('</body>', downloadBtn + '</body>');
     const win = window.open('', '_blank');
-    win.document.write(this._html);
-    win.document.close();
+    if (win) {
+      win.document.write(htmlWithBtn);
+      win.document.close();
+    } else {
+      // Fallback: direct download
+      const a = document.createElement('a');
+      a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(this._html);
+      a.download = filename;
+      a.click();
+    }
   },
 
   buildHTML(t) {
