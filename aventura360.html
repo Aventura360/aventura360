@@ -2321,10 +2321,17 @@ const Sheets = {
   },
 
   async pushToSheets() {
+    // Force all values to plain strings to prevent Sheets auto-converting dates/times
+    const forceStr = (v) => {
+      if (v === null || v === undefined) return '';
+      if (typeof v === 'object' && !(v instanceof Date)) return JSON.stringify(v);
+      if (v instanceof Date) return v.toISOString().slice(0,10);
+      return String(v);
+    };
     const toRows = (arr) => {
       if (!arr.length) return [];
       const keys = Object.keys(arr[0]);
-      return [keys, ...arr.map(o => keys.map(k => o[k] ?? ''))];
+      return [keys, ...arr.map(o => keys.map(k => forceStr(o[k])))];
     };
     await this.call({
       action:     'syncAll',
@@ -2336,23 +2343,56 @@ const Sheets = {
   },
 
   _importFromSheets(r) {
+    const TIME_FIELDS = ['hora_inicio','hora_fin','dep_time','arr_time'];
+    const DATE_FIELDS = ['fecha','fecha_inicio','fecha_fin','dep_date','arr_date'];
+    const NUM_FIELDS  = ['presupuesto','importe','importe_base','coste'];
+
+    const cleanVal = (h, v) => {
+      if (v === null || v === undefined || v === '') return '';
+      // Google Sheets returns JS Date objects for cells it auto-parsed as dates/times
+      if (v instanceof Date) {
+        if (TIME_FIELDS.includes(h)) {
+          // Times stored as 1899-12-30 epoch in Sheets
+          return String(v.getHours()).padStart(2,'0') + ':' + String(v.getMinutes()).padStart(2,'0');
+        }
+        const yy = v.getFullYear();
+        const mo = String(v.getMonth()+1).padStart(2,'0');
+        const dd = String(v.getDate()).padStart(2,'0');
+        return yy + '-' + mo + '-' + dd;
+      }
+      const s = String(v);
+      // ISO datetime string → strip time part for date fields
+      if (DATE_FIELDS.includes(h) && /^\d{4}-\d{2}-\d{2}T/.test(s)) return s.slice(0,10);
+      // 1899-12-30T... pattern for time fields
+      if (TIME_FIELDS.includes(h) && s.startsWith('1899-12-30T')) {
+        const d = new Date(s);
+        return String(d.getUTCHours()).padStart(2,'0') + ':' + String(d.getUTCMinutes()).padStart(2,'0');
+      }
+      // ISO datetime for date fields
+      if (DATE_FIELDS.includes(h) && /^\d{4}-\d{2}-\d{2}T/.test(s)) return s.slice(0,10);
+      return s;
+    };
+
     const toObjs = (rows) => {
       if (!rows || rows.length < 2) return [];
       const [headers, ...data] = rows;
-      return data.map(row => {
+      return data.filter(row => row.some(c => c !== '' && c !== null && c !== undefined)).map(row => {
         const obj = {};
-        headers.forEach((h, i) => { obj[h] = row[i] ?? ''; });
-        // Convert numeric strings back to numbers where needed
-        ['presupuesto','importe','importe_base','coste'].forEach(k => {
-          if (obj[k] !== '' && obj[k] !== undefined) obj[k] = Number(obj[k]) || 0;
+        headers.forEach((h, i) => { obj[h] = cleanVal(h, row[i] ?? ''); });
+        // Numbers
+        NUM_FIELDS.forEach(k => {
+          if (obj[k] !== '' && obj[k] !== undefined) {
+            obj[k] = parseFloat(String(obj[k]).replace(/[^0-9.-]/g,'')) || 0;
+          }
         });
-        // Parse dayLabels if stored as JSON string
-        if (obj.dayLabels && typeof obj.dayLabels === 'string') {
+        // dayLabels JSON
+        if (obj.dayLabels && typeof obj.dayLabels === 'string' && obj.dayLabels.startsWith('{')) {
           try { obj.dayLabels = JSON.parse(obj.dayLabels); } catch(e) { obj.dayLabels = {}; }
         }
         return obj;
       });
     };
+
     if (r.trips      && r.trips.length)      DB.trips      = toObjs(r.trips);
     if (r.expenses   && r.expenses.length)   DB.expenses   = toObjs(r.expenses);
     if (r.activities && r.activities.length) DB.activities = toObjs(r.activities);
