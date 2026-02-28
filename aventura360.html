@@ -290,6 +290,14 @@ textarea.inp{min-height:72px;resize:vertical}
 .status-msg.err{background:rgba(244,91,122,.1);border:1px solid rgba(244,91,122,.3);color:var(--red);display:block}
 .status-msg.loading{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);color:var(--blue);display:block}
 
+/* ── MOBILE LOGO (must be BEFORE media queries) ── */
+.logo-mobile{display:none;position:relative;align-items:center;flex-shrink:0;height:44px;width:155px;margin-right:auto}
+.logo-mobile-plane{position:absolute;left:8px;top:4px;font-size:14px;transform:rotate(-35deg);filter:drop-shadow(0 0 5px rgba(79,142,247,.95));z-index:3}
+.logo-mobile-globe{position:absolute;right:4px;bottom:1px;font-size:12px;filter:drop-shadow(0 0 5px rgba(124,92,250,.85));z-index:3}
+.logo-mobile-text{position:relative;z-index:2;display:flex;align-items:baseline;padding-left:28px;padding-top:16px}
+.logo-mobile-a{font-size:16px;font-weight:900;letter-spacing:.5px;background:linear-gradient(90deg,#4f8ef7,#7c5cfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.logo-mobile-3{font-size:16px;font-weight:900;background:linear-gradient(90deg,#7c5cfa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+
 /* ════════════════════════════════════════
    RESPONSIVE — TABLET (≤768px)
 ════════════════════════════════════════ */
@@ -311,7 +319,7 @@ textarea.inp{min-height:72px;resize:vertical}
   .topbar{height:52px;padding:0 10px;flex-wrap:nowrap;gap:6px}
   .logo-wrapper{display:none}       /* hide desktop logo */
   .logo-mobile{display:flex}        /* show mobile logo */
-  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0;margin-left:auto}
+  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
   .topbar-right .btn-sm{font-size:11px;padding:4px 9px;white-space:nowrap}
   #btnToggleAmounts{font-size:11px;padding:4px 9px}
   #connBadge{font-size:10px;padding:2px 6px}
@@ -407,14 +415,6 @@ textarea.inp{min-height:72px;resize:vertical}
   .share-opt{padding:10px}
   .share-icon{font-size:20px;width:32px}
 }
-
-/* ── MOBILE LOGO ── */
-.logo-mobile{display:none;position:relative;align-items:center;flex-shrink:0;height:36px;width:140px;margin-right:auto}
-.logo-mobile-plane{position:absolute;left:6px;top:2px;font-size:12px;transform:rotate(-35deg);filter:drop-shadow(0 0 4px rgba(79,142,247,.9));z-index:3}
-.logo-mobile-globe{position:absolute;right:2px;bottom:0;font-size:11px;filter:drop-shadow(0 0 4px rgba(124,92,250,.8));z-index:3}
-.logo-mobile-text{position:relative;z-index:2;display:flex;align-items:baseline;gap:0;padding-left:24px;margin-top:8px}
-.logo-mobile-a{font-size:14px;font-weight:900;letter-spacing:.5px;background:linear-gradient(90deg,#4f8ef7,#7c5cfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.logo-mobile-3{font-size:14px;font-weight:900;background:linear-gradient(90deg,#7c5cfa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
 /* ── MOBILE BOTTOM NAV ── */
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--s1);border-top:1px solid var(--border);padding:4px 0 env(safe-area-inset-bottom,4px)}
@@ -1032,7 +1032,17 @@ textarea.inp{min-height:72px;resize:vertical}
 // ── STATE ──────────────────────────────────────────────────────────
 // ── Formato numérico garantizado con punto de miles ──
 function fmtNum(n) {
-  const num = Number(String(n).replace(/\./g, '').replace(/,/g, '.'));
+  // If n is already a JS number, use it directly.
+  // If string, strip thousands dots only if they're grouping separators
+  // (i.e. digits on both sides and not a decimal dot)
+  let num;
+  if (typeof n === 'number') {
+    num = n;
+  } else {
+    // Remove grouping dots: a dot surrounded by digits → thousands separator
+    const clean = String(n).replace(/(\d)\.(\d{3})(?!\d)/g, '$1$2').replace(',', '.');
+    num = parseFloat(clean);
+  }
   const rounded = Math.round(isNaN(num) ? 0 : num);
   return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
@@ -2391,12 +2401,16 @@ const Share = {
     const text = this.buildText(t);
     const opts = document.getElementById('shareOptions');
     const html = this.buildHTML(t);
-    opts.innerHTML = [
-      { icon: '🌐', name: 'Ver y guardar HTML', desc: 'Diseño completo igual que la app — guarda como archivo para compartir', action: `Share._preview()` },
-      { icon: '💬', name: 'WhatsApp', desc: 'Envía el itinerario por WhatsApp', action: `Share._whatsapp()` },
-      { icon: '📧', name: 'Email', desc: 'Abre tu cliente de correo con el itinerario', action: `Share._email()` },
-      { icon: '📋', name: 'Copiar texto', desc: 'Texto plano con emojis para pegar en cualquier app', action: `Share._copy()` },
-    ].map(o => `<div class="share-opt" onclick="${o.action}">
+    const options = [
+      { icon: '🌐', name: 'Ver y descargar HTML', desc: 'Abre el diseño completo — idéntico a la app · descarga el archivo para enviarlo', action: `Share._preview()` },
+      { icon: '💬', name: 'WhatsApp (texto)', desc: 'Itinerario en texto con emojis — sin diseño visual', action: `Share._whatsapp()` },
+      { icon: '📧', name: 'Email (texto)', desc: 'Abre tu cliente de correo con el itinerario en texto', action: `Share._email()` },
+      { icon: '📋', name: 'Copiar texto', desc: 'Texto plano para pegar en cualquier app', action: `Share._copy()` },
+    ];
+    const infoHtml = `<div style="background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.6">
+      💡 Para compartir con el <strong style="color:var(--text)">diseño visual completo</strong>, usa <em>Ver y descargar HTML</em> y envía el archivo adjunto por WhatsApp o email.
+    </div>`;
+    opts.innerHTML = infoHtml + options.map(o => `<div class="share-opt" onclick="${o.action}">
       <div class="share-icon">${o.icon}</div>
       <div class="share-info"><div class="name">${o.name}</div><div class="desc">${o.desc}</div></div>
     </div>`).join('');
@@ -2477,6 +2491,32 @@ const Share = {
     const body = encodeURIComponent(this._text);
     window.open('mailto:?subject=' + subject + '&body=' + body);
     App.closeModal('dlgShare');
+  },
+
+  _download() {
+    App.closeModal('dlgShare');
+    const t = App.currentTrip();
+    const filename = (t ? t.nombre.replace(/[^a-z0-9áéíóúñ]/gi,'_') : 'itinerario') + '.html';
+    const blob = new Blob([this._html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
+
+  async _native() {
+    App.closeModal('dlgShare');
+    const t = App.currentTrip();
+    const filename = (t ? t.nombre.replace(/[^a-z0-9áéíóúñ]/gi,'_') : 'itinerario') + '.html';
+    try {
+      const blob = new Blob([this._html], { type: 'text/html' });
+      const file = new File([blob], filename, { type: 'text/html' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: t ? t.nombre : 'Itinerario', text: 'Mi itinerario de viaje — Aventura360' });
+      } else {
+        await navigator.share({ title: t ? t.nombre : 'Itinerario', text: this._text });
+      }
+    } catch(e) { if (e.name !== 'AbortError') App.toast('Error al compartir: ' + e.message, 'error'); }
   },
 
   _preview() {
