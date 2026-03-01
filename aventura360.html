@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <!-- v20260301-1330 -->
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -372,7 +373,8 @@ textarea.inp{min-height:72px;resize:vertical}
   /* ── Expense table: mobile handled by JS card render ── */
 
   /* ── Cat tabs: hidden on mobile, replaced by select ── */
-  .cat-tabs{display:none}
+  .cat-tabs{display:none !important}
+  #catSelectWrap{display:block !important}
 
   /* ── Day nav chips ── */
   .day-nav{gap:6px;padding-bottom:10px}
@@ -637,7 +639,7 @@ textarea.inp{min-height:72px;resize:vertical}
           <div class="cat-tab" data-cat="seguros" onclick="Expenses.filterCat('seguros',this)">🛡️ Seguros <span class="cnt" id="cnt-seguros">0</span></div>
         </div>
         <!-- Mobile filter select (hidden on desktop) -->
-        <div id="catSelectWrap" style="display:none;padding:8px 0">
+        <div id="catSelectWrap" style="padding:8px 0">
           <select class="inp" id="catSelect" onchange="Expenses.filterCatMobile(this.value)" style="width:100%;font-size:13px;padding:8px 10px">
             <option value="todas">🗂 Todas</option>
             <option value="vuelos">✈️ Vuelos</option>
@@ -648,7 +650,7 @@ textarea.inp{min-height:72px;resize:vertical}
             <option value="seguros">🛡️ Seguros</option>
           </select>
         </div>
-        <div class="panel" style="border-radius:var(--r)">
+        <div class="panel" style="border-radius:var(--r);margin-top:0">
           <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
             <div class="panel-title" id="listTitle" style="flex:1;font-size:14px">Todos los Gastos</div>
             <span id="listTotal" style="font-size:13px;color:var(--text2);font-weight:600;white-space:nowrap"></span>
