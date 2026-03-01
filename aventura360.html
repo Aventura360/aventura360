@@ -502,13 +502,9 @@ textarea.inp{min-height:72px;resize:vertical}
     </svg>
     <!-- ✈ pegado al inicio del texto AVENTURA -->
     <span style="position:absolute;left:32px;top:18px;font-size:16px;transform:rotate(-35deg);transform-origin:top right;filter:drop-shadow(0 0 5px rgba(79,142,247,.95));z-index:3">✈</span>
-    <!-- 🌍 globe -->
-    <div style="position:absolute;right:4px;bottom:4px;display:flex;flex-direction:column;align-items:center;z-index:3">
-      <span style="font-size:13px;filter:drop-shadow(0 0 5px rgba(124,92,250,.9));line-height:1">🌍</span>
-    </div>
     <div class="logo-text-container">
       <div class="logo-main-title">
-        <span class="txt-aventura">AVENTURA</span><span class="txt-360">360</span>
+        <span class="txt-aventura">AVENTURA</span><span class="txt-360">360</span><span style="font-size:13px;filter:drop-shadow(0 0 5px rgba(124,92,250,.9));margin-left:3px;vertical-align:middle">🌍</span>
       </div>
       <div class="logo-bottom-title">Planificador de Viajes</div>
     </div>
@@ -3049,7 +3045,9 @@ const Share = {
     const showAmt = State.showAmounts;
     const tipoEmoji = { vuelo:'✈️', transporte:'🚌', alojamiento:'🏨', visita:'🏛️', comida:'🍽️', compras:'🛍️', actividad:'🎯', otro:'📌' };
     const estadoColor = { pendiente:'#f0b429', reservado:'#4f8ef7', pagado:'#10d48e', cancelado:'#7a88a8' };
-    const estadoLabel = { pendiente:'⏳ Pendiente', reservado:'🔵 Reservado', pagado:'✅ Pagado', cancelado:'❌ Cancelado' };
+    const estadoLabel = State.lang==='en'
+      ? { pendiente:'⏳ Pending', reservado:'🔵 Reserved', pagado:'✅ Paid', cancelado:'❌ Cancelled' }
+      : { pendiente:'⏳ Pendiente', reservado:'🔵 Reservado', pagado:'✅ Pagado', cancelado:'❌ Cancelado' };
     const dayColors = ['#4f8ef7','#7c5cfa','#10d48e','#f0b429','#f45b7a','#38bdf8','#fb923c'];
 
     let totalDias = '—';
@@ -3064,7 +3062,7 @@ const Share = {
       const acts = DB.activities.filter(a => a.viaje_id === t.id && a.fecha === d)
         .sort((a,b) => (a.hora_inicio||'').localeCompare(b.hora_inicio||''));
       if (acts.length === 0) return '';
-      const dt = new Date(d + 'T12:00:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+      const dt = new Date(d + 'T12:00:00').toLocaleDateString(State.lang==='en'?'en-GB':'es-ES', { weekday:'long', day:'numeric', month:'long' });
       const dayCost = acts.reduce((s,a) => s+(a.coste||0), 0);
       const color = dayColors[i % dayColors.length];
       const dayLabel = t.dayLabels && t.dayLabels[d] ? ' &middot; ' + t.dayLabels[d] : '';
@@ -3093,12 +3091,12 @@ const Share = {
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:40px;height:40px;border-radius:50%;border:2.5px solid ${color};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:${color};background:#080c18;flex-shrink:0">${i+1}</div>
             <div>
-              <div style="font-size:17px;font-weight:800;color:${color}">Día ${i+1}${dayLabel}</div>
+              <div style="font-size:17px;font-weight:800;color:${color}">${State.lang==='en'?'Day':'Día'} ${i+1}${dayLabel}</div>
               <div style="font-size:11px;color:#7a88a8;margin-top:1px;text-transform:capitalize">${dt}</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:16px">
-            <span style="font-size:12px;color:#7a88a8">${acts.length} actividad${acts.length!==1?'es':''}</span>
+            <span style="font-size:12px;color:#7a88a8">${acts.length} ${State.lang==='en'?(acts.length!==1?'activities':'activity'):(acts.length!==1?'actividades':'actividad')}</span>
             ${showAmt && dayCost > 0 ? `<span style="font-size:13px;color:#10d48e;font-weight:700;font-family:'Courier New',monospace">💶 ${fmtNum(dayCost)} ${moneda}</span>` : ''}
           </div>
         </div>
@@ -3108,27 +3106,27 @@ const Share = {
 
     const budgetBar = showAmt && budget > 0 ? `
       <div style="background:#0f1524;border:1px solid #1d2640;border-radius:12px;padding:18px 22px;margin-bottom:20px">
-        <div style="font-size:13px;font-weight:700;color:#7a88a8;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">💰 Resumen económico</div>
+        <div style="font-size:13px;font-weight:700;color:#7a88a8;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">💰 ${State.lang==='en'?'Financial Summary':'Resumen económico'}</div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:13px;color:#7a88a8">Presupuesto total</span>
+          <span style="font-size:13px;color:#7a88a8">${State.lang==='en'?'Total budget':'Presupuesto total'}</span>
           <span style="font-size:13px;font-weight:700;color:#f0b429;font-family:'Courier New',monospace">${fmtNum(budget)} ${moneda}</span>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:13px;color:#7a88a8">Gasto estimado</span>
+          <span style="font-size:13px;color:#7a88a8">${State.lang==='en'?'Estimated cost':'Gasto estimado'}</span>
           <span style="font-size:13px;font-weight:700;color:#e8edf8;font-family:'Courier New',monospace">${fmtNum(totalCost)} ${moneda}</span>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:14px">
-          <span style="font-size:13px;color:#7a88a8">${avail >= 0 ? 'Disponible' : 'Exceso'}</span>
+          <span style="font-size:13px;color:#7a88a8">${avail >= 0 ? (State.lang==='en'?'Available':'Disponible') : (State.lang==='en'?'Over budget':'Exceso')}</span>
           <span style="font-size:13px;font-weight:700;color:${avail>=0?'#10d48e':'#f45b7a'};font-family:'Courier New',monospace">${fmtNum(Math.abs(avail))} ${moneda}</span>
         </div>
         <div style="height:6px;background:#1d2640;border-radius:3px;overflow:hidden">
           <div style="height:100%;width:${pct}%;background:${pct>90?'#f45b7a':pct>70?'#f0b429':'#4f8ef7'};border-radius:3px"></div>
         </div>
-        <div style="font-size:11px;color:#3d4d68;margin-top:6px;text-align:right">${pct}% del presupuesto</div>
+        <div style="font-size:11px;color:#3d4d68;margin-top:6px;text-align:right">${pct}% ${State.lang==='en'?'of budget':'del presupuesto'}</div>
       </div>` : '';
 
     return `<!DOCTYPE html>
-<html lang="es">
+<html lang="${State.lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -3144,8 +3142,12 @@ const Share = {
 <div style="max-width:680px;margin:0 auto">
 
   <!-- Logo header -->
-  <div style="text-align:center;margin-bottom:24px;padding:6px 0">
-    <span style="font-size:13px;font-weight:700;letter-spacing:3px;color:#3d4d68;text-transform:uppercase">✈ AVENTURA360 &nbsp;·&nbsp; Planificador de Viajes</span>
+  <div style="background:linear-gradient(135deg,#0f1524,#161e30);border-radius:16px;padding:24px 28px;margin-bottom:24px;border-bottom:3px solid #4f8ef7;display:flex;align-items:center;gap:16px">
+    <div style="font-size:40px;line-height:1">✈️</div>
+    <div>
+      <div style="font-size:26px;font-weight:900;background:linear-gradient(90deg,#4f8ef7,#7c5cfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;line-height:1">AVENTURA360 🌍</div>
+      <div style="font-size:11px;color:#7a88a8;letter-spacing:2px;text-transform:uppercase;margin-top:4px">${State.lang==='en'?'Travel Planner':'Planificador de Viajes'}</div>
+    </div>
   </div>
 
   <!-- Tarjeta principal del viaje -->
@@ -3160,11 +3162,11 @@ const Share = {
     <div style="display:flex;gap:0;background:#080c18;border-radius:10px;overflow:hidden;border:1px solid #1d2640">
       <div style="flex:1;text-align:center;padding:14px 8px;border-right:1px solid #1d2640">
         <div style="font-size:30px;font-weight:900;color:#4f8ef7;font-family:'Courier New',monospace;line-height:1">${totalDias}</div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#3d4d68;margin-top:4px;text-transform:uppercase">Días</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#3d4d68;margin-top:4px;text-transform:uppercase">${State.lang==='en'?'Days':'Días'}</div>
       </div>
       <div style="flex:1;text-align:center;padding:14px 8px;border-right:1px solid #1d2640">
         <div style="font-size:30px;font-weight:900;color:#10d48e;font-family:'Courier New',monospace;line-height:1">${allActs.length}</div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#3d4d68;margin-top:4px;text-transform:uppercase">Actividades</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#3d4d68;margin-top:4px;text-transform:uppercase">${State.lang==='en'?'Activities':'Actividades'}</div>
       </div>
       ${showAmt && budget > 0 ? `
       <div style="flex:1;text-align:center;padding:14px 8px">
@@ -3178,12 +3180,12 @@ const Share = {
   ${budgetBar}
 
   <!-- Itinerario por días -->
-  <div style="font-size:13px;font-weight:700;color:#7a88a8;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">🗓 Itinerario</div>
+  <div style="font-size:13px;font-weight:700;color:#7a88a8;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">🗓 ${State.lang==='en'?'Itinerary':'Itinerario'}</div>
   ${dayRows}
 
   <!-- Footer -->
   <div style="text-align:center;padding:20px 0 8px;border-top:1px solid #1d2640;margin-top:8px">
-    <div style="font-size:11px;color:#3d4d68">Generado con <strong style="color:#4f8ef7">✈ AVENTURA360</strong> &nbsp;·&nbsp; Planificador de Viajes</div>
+    <div style="font-size:11px;color:#3d4d68">${State.lang==='en'?'Generated with':'Generado con'} <strong style="color:#4f8ef7">✈ AVENTURA360 🌍</strong> &nbsp;·&nbsp; ${State.lang==='en'?'Travel Planner':'Planificador de Viajes'}</div>
   </div>
 
 </div>
