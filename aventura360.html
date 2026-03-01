@@ -534,11 +534,10 @@ textarea.inp{min-height:72px;resize:vertical}
 
   <div class="topbar-right">
     <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes"><span class="btn-label-full">💰 Importes</span><span class="btn-label-short" style="display:none">💰</span></button>
-    <span class="badge" id="connBadge" style="display:none" onclick="Sheets.openConfig()" title="Configuración Sheets"></span>
-    <button class="btn btn-ghost btn-sm mobile-hide" onclick="Sheets.openConfig()" title="Conectar Google Sheets" id="btnSheetsConfig">🔗</button>
+    <span class="badge" id="connBadge" style="display:none" onclick="Config.open()" title="Configuración Sheets"></span>
     <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none" title="Sincronizar">☁️</button>
-    <button class="btn btn-ghost btn-sm mobile-hide" onclick="App.hardRefresh()" title="Actualizar app">🔄</button>
     <button class="btn btn-primary btn-sm" onclick="Trips.openModal()" title="Nuevo viaje">＋</button>
+    <button class="btn btn-ghost btn-sm" onclick="Config.open()" title="Configuración" style="font-size:18px;padding:4px 8px">☰</button>
   </div>
 </div>
 
@@ -577,41 +576,41 @@ textarea.inp{min-height:72px;resize:vertical}
       <div class="stat-card">
         <div class="stat-glow" style="background:var(--sky)"></div>
         <div class="stat-icon">📅</div>
-        <div class="stat-label">Días</div>
+        <div class="stat-label" id="sLabelDias">Días</div>
         <div class="stat-val" id="sDays">—</div>
         <div class="stat-sub" id="sDaysSub"></div>
       </div>
       <div class="stat-card">
         <div class="stat-glow" style="background:var(--purple)"></div>
         <div class="stat-icon">🧾</div>
-        <div class="stat-label">Nº Gastos</div>
+        <div class="stat-label" id="sLabelGastos">Nº Gastos</div>
         <div class="stat-val" id="sItems">—</div>
         <div class="stat-sub" id="sItemsSub"></div>
       </div>
       <div class="stat-card">
         <div class="stat-glow" style="background:var(--blue)"></div>
         <div class="stat-icon">💰</div>
-        <div class="stat-label">Presupuesto</div>
+        <div class="stat-label" id="sLabelBudget">Presupuesto</div>
         <div class="stat-val" id="sBudget">—</div>
         <div class="stat-bar"><div class="stat-bar-fill" id="sBudgetBar" style="background:var(--blue);width:0%"></div></div>
       </div>
       <div class="stat-card">
         <div class="stat-glow" style="background:var(--red)"></div>
         <div class="stat-icon">💸</div>
-        <div class="stat-label">Total Gastado</div>
+        <div class="stat-label" id="sLabelSpent">Total Gastado</div>
         <div class="stat-val" id="sSpent" style="color:var(--red)">—</div>
         <div class="stat-sub" id="sSpentPct"></div>
       </div>
       <div class="stat-card">
         <div class="stat-glow" style="background:var(--green)"></div>
         <div class="stat-icon">✅</div>
-        <div class="stat-label">Disponible</div>
+        <div class="stat-label" id="sLabelAvail">Disponible</div>
         <div class="stat-val" id="sAvail">—</div>
       </div>
       <div class="stat-card">
         <div class="stat-glow" style="background:var(--yellow)"></div>
         <div class="stat-icon">⏳</div>
-        <div class="stat-label">Pagado Real</div>
+        <div class="stat-label" id="sLabelPaid">Pagado Real</div>
         <div class="stat-val" id="sPaid">—</div>
         <div class="stat-sub" id="sPaidSub"></div>
       </div>
@@ -1071,6 +1070,83 @@ textarea.inp{min-height:72px;resize:vertical}
 <!-- MOBILE BOTTOM NAV -->
 
 
+<!-- ═══════════════════════════════════════
+     SIDEBAR CONFIGURACIÓN
+════════════════════════════════════════ -->
+<div id="sidebarOverlay" onclick="Config.close()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;backdrop-filter:blur(2px)"></div>
+<div id="sidebar" style="position:fixed;top:0;right:-360px;width:340px;max-width:92vw;height:100%;background:var(--s1);border-left:1px solid var(--border);z-index:301;overflow-y:auto;transition:right .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="font-size:16px;font-weight:700" id="cfgTitle">⚙️ Configuración</div>
+    <button class="btn btn-ghost btn-sm" onclick="Config.close()" style="font-size:18px;padding:4px 8px">✕</button>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:16px">
+
+    <!-- IDIOMA -->
+    <div class="cfg-section">
+      <div class="cfg-section-title" id="cfgLangTitle">🌐 Idioma / Language</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="btnLangES" class="btn btn-primary" onclick="Config.setLang('es')" style="flex:1;font-size:13px">🇪🇸 Español</button>
+        <button id="btnLangEN" class="btn btn-ghost" onclick="Config.setLang('en')" style="flex:1;font-size:13px">🇬🇧 English</button>
+      </div>
+    </div>
+
+    <!-- GOOGLE SHEETS -->
+    <div class="cfg-section">
+      <div class="cfg-section-title" id="cfgSheetsTitle">🔗 Google Sheets</div>
+      <div class="fgroup" style="margin-top:10px">
+        <label id="cfgScriptLabel">URL del Script</label>
+        <input class="inp" id="cfgScript" placeholder="https://script.google.com/macros/s/…/exec" style="font-size:11px">
+      </div>
+      <div class="fgroup">
+        <label id="cfgSecretLabel">Clave secreta</label>
+        <input class="inp" type="password" id="cfgSecret" placeholder="Tu clave secreta">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="Config.saveSheets()" style="flex:1;font-size:12px" id="cfgSheetsBtn">💾 Conectar</button>
+        <button class="btn btn-ghost btn-sm" onclick="Sheets.sync()" style="flex:1;font-size:12px" id="cfgSyncBtn">☁️ Sincronizar</button>
+        <button class="btn btn-ghost btn-sm" onclick="App.hardRefresh()" style="flex:1;font-size:12px" id="cfgRefreshBtn">🔄 Actualizar</button>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="Config.disconnectSheets()" style="width:100%;margin-top:8px;font-size:12px" id="cfgDisconnectBtn">🔌 Desconectar</button>
+      <div id="cfgSheetsStatus" style="margin-top:8px;font-size:11px;color:var(--text3)"></div>
+    </div>
+
+    <!-- TIPOS DE GASTO -->
+    <div class="cfg-section">
+      <div class="cfg-section-title" id="cfgCatsTitle">🏷️ Tipos de Gasto</div>
+      <div id="cfgCatsList" style="margin-top:10px"></div>
+      <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px" id="cfgAddCatLabel">Añadir categoría personalizada:</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input class="inp" id="cfgNewCatIcon" placeholder="🎭" style="width:54px;text-align:center;font-size:16px">
+          <input class="inp" id="cfgNewCatName" placeholder="Nombre" style="flex:1">
+          <button class="btn btn-primary btn-sm" onclick="Config.addCat()" id="cfgAddBtn">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORTAR -->
+    <div class="cfg-section">
+      <div class="cfg-section-title" id="cfgExportTitle">📤 Exportar Datos</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+        <button class="btn btn-ghost" onclick="Config.exportExcel('gastos')" style="font-size:12px;justify-content:flex-start;gap:8px" id="cfgExportGastos">📊 Exportar Gastos a Excel</button>
+        <button class="btn btn-ghost" onclick="Config.exportExcel('itinerario')" style="font-size:12px;justify-content:flex-start;gap:8px" id="cfgExportItin">🗓 Exportar Itinerario a Excel</button>
+        <button class="btn btn-ghost" onclick="Config.exportExcel('todo')" style="font-size:12px;justify-content:flex-start;gap:8px" id="cfgExportTodo">📦 Exportar Todo a Excel</button>
+      </div>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="cfg-section" style="border-color:rgba(244,91,122,.3)">
+      <div class="cfg-section-title" style="color:var(--red)" id="cfgDangerTitle">⚠️ Zona Peligrosa</div>
+      <button class="btn btn-danger" onclick="Config.clearAllData()" style="width:100%;margin-top:10px;font-size:12px" id="cfgClearBtn">🗑 Borrar todos los datos locales</button>
+    </div>
+
+  </div>
+</div>
+
+
 <script>
 // ═══════════════════════════════════════════════════════════════════
 // AVENTURA360 — Complete rewrite
@@ -1102,6 +1178,7 @@ const State = {
   displayCur: 'EUR',
   showAmounts: true,
   currentDay: null,
+  lang: 'es',
   rates: { EUR: 1, USD: 1.08, GBP: 0.86, JPY: 162, MXN: 18.5, COP: 4300, CHF: 0.96, CAD: 1.47, AUD: 1.65, BRL: 5.4, THB: 38.5 },
   ratesLoaded: false,
 };
@@ -1157,6 +1234,18 @@ const App = {
 
   async init() {
     CFG.load();
+    // Load language preference
+    try {
+      const savedLang = localStorage.getItem('a360_lang');
+      if (savedLang) State.lang = savedLang;
+    } catch(e) {}
+    // Load custom categories
+    try {
+      const customCats = JSON.parse(localStorage.getItem('a360_custom_cats') || '[]');
+      customCats.forEach(c => {
+        CATS[c.key] = { icon: c.icon, label: c.label, color: c.color || 'var(--sky)' };
+      });
+    } catch(e) {}
 
     if (CFG.scriptUrl && CFG.secret) {
       // ── SHEETS MODE: Sheets is the single source of truth ──
@@ -1576,6 +1665,105 @@ const App = {
     Itin.render();
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  applyLang() {
+    const lang = State.lang;
+    // Nav tabs
+    const navMap = {
+      resumen: t('navResumen'), itinerario: t('navItinerario'),
+      gastos: t('navGastos'), graficas: t('navGraficas'), presupuesto: t('navPres')
+    };
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      const onclick = btn.getAttribute('onclick') || '';
+      Object.entries(navMap).forEach(([key, label]) => {
+        if (onclick.includes("'" + key + "'")) btn.textContent = label;
+      });
+    });
+    // Mobile short nav label
+    const presTab = document.querySelector('.nav-tab[onclick*="presupuesto"] .nav-label-short');
+    if (presTab) presTab.textContent = lang === 'en' ? '🎯 Budget' : '🎯 Pres.';
+    const presTabFull = document.querySelector('.nav-tab[onclick*="presupuesto"] .nav-label-full');
+    if (presTabFull) presTabFull.textContent = t('navPres');
+
+    // Stats labels
+    const statLabels = {
+      sLabelDias: t('statDays'), sLabelGastos: t('statExpenses'),
+      sLabelBudget: t('statBudget'), sLabelSpent: t('statSpent'),
+      sLabelAvail: t('statAvail'), sLabelPaid: t('statPaid'),
+    };
+    Object.entries(statLabels).forEach(([id, txt]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = txt;
+    });
+
+    // Topbar amounts button
+    const amtFull = document.querySelector('#btnToggleAmounts .btn-label-full');
+    const amtShort = document.querySelector('#btnToggleAmounts .btn-label-short');
+    if (amtFull) amtFull.textContent = t('btnImportes');
+    if (amtShort) amtShort.textContent = '💰';
+
+    // Cat tabs desktop
+    const catTabMap = {
+      todas: t('gastosTodas'), vuelos: t('gastosVuelos'), hoteles: t('gastosHoteles'),
+      transfers: t('gastosTransfers'), excursiones: t('gastosExcurs'),
+      comidas: t('gastosComidas'), seguros: t('gastosSeguros'), compras: t('gastosCompras'),
+    };
+    document.querySelectorAll('.cat-tab').forEach(tab => {
+      const cat = tab.dataset.cat;
+      if (cat && catTabMap[cat]) {
+        const cnt = tab.querySelector('.cnt');
+        tab.textContent = catTabMap[cat] + ' ';
+        if (cnt) tab.appendChild(cnt);
+      }
+    });
+
+    // Mobile cat select
+    const catSel = document.getElementById('catSelect');
+    if (catSel) {
+      const opts = {
+        todas: t('gastosTodas'), vuelos: t('gastosVuelos'), hoteles: t('gastosHoteles'),
+        transfers: t('gastosTransfers'), excursiones: t('gastosExcurs'),
+        comidas: t('gastosComidas'), seguros: t('gastosSeguros'), compras: t('gastosCompras'),
+      };
+      Array.from(catSel.options).forEach(opt => {
+        if (opts[opt.value]) opt.text = opts[opt.value];
+      });
+    }
+
+    // Trip bar label
+    const tripLbl = document.querySelector('.trip-label');
+    if (tripLbl) tripLbl.textContent = t('tripLabel');
+
+    // Refresh stats display
+    this.renderStats();
+  },
+
+  addCatToSelects(key, icon, label) {
+    // Add to expense form select
+    const fCat = document.getElementById('fCat');
+    if (fCat && !fCat.querySelector('[value="' + key + '"]')) {
+      const opt = document.createElement('option');
+      opt.value = key; opt.textContent = icon + ' ' + label;
+      fCat.appendChild(opt);
+    }
+    // Add to mobile cat select
+    const catSel = document.getElementById('catSelect');
+    if (catSel && !catSel.querySelector('[value="' + key + '"]')) {
+      const opt = document.createElement('option');
+      opt.value = key; opt.textContent = icon + ' ' + label;
+      catSel.appendChild(opt);
+    }
+    // Add desktop tab
+    const catTabs = document.getElementById('catTabs');
+    if (catTabs && !catTabs.querySelector('[data-cat="' + key + '"]')) {
+      const div = document.createElement('div');
+      div.className = 'cat-tab';
+      div.dataset.cat = key;
+      div.onclick = () => Expenses.filterCat(key, div);
+      div.innerHTML = icon + ' ' + label + ' <span class="cnt" id="cnt-' + key + '">0</span>';
+      catTabs.appendChild(div);
+    }
   },
 
   hardRefresh() {
@@ -3088,7 +3276,370 @@ document.querySelectorAll('.overlay').forEach(o => {
 // ════════════════════════════════════════════════════════════════════
 // BOOT
 // ════════════════════════════════════════════════════════════════════
-App.init();
+
+// ══════════════════════════════════════════════════════════════════
+// i18n TRANSLATIONS
+// ══════════════════════════════════════════════════════════════════
+const I18N = {
+  es: {
+    // Nav
+    navResumen: '🏠 Resumen', navItinerario: '🗓 Itinerario', navGastos: '💸 Gastos',
+    navGraficas: '📊 Gráficas', navPres: '🎯 Pres. vs Real',
+    // Topbar
+    btnImportes: '💰 Importes', btnNewTrip: '＋',
+    // Trip bar
+    tripLabel: '✈ Viaje', btnEdit: '✏ Editar', btnDelete: '🗑 Eliminar',
+    // Config sidebar
+    cfgTitle: '⚙️ Configuración', cfgLangTitle: '🌐 Idioma / Language',
+    cfgSheetsTitle: '🔗 Google Sheets', cfgScriptLabel: 'URL del Script',
+    cfgSecretLabel: 'Clave secreta', cfgSheetsBtn: '💾 Conectar',
+    cfgSyncBtn: '☁️ Sincronizar', cfgRefreshBtn: '🔄 Actualizar',
+    cfgDisconnectBtn: '🔌 Desconectar', cfgCatsTitle: '🏷️ Tipos de Gasto',
+    cfgAddCatLabel: 'Añadir categoría personalizada:',
+    cfgAddBtn: '＋', cfgExportTitle: '📤 Exportar Datos',
+    cfgExportGastos: '📊 Exportar Gastos a Excel',
+    cfgExportItin: '🗓 Exportar Itinerario a Excel',
+    cfgExportTodo: '📦 Exportar Todo a Excel',
+    cfgDangerTitle: '⚠️ Zona Peligrosa', cfgClearBtn: '🗑 Borrar todos los datos locales',
+    // Stats
+    statDays: 'Días', statExpenses: 'Nº Gastos', statBudget: 'Presupuesto',
+    statSpent: 'Total Gastado', statAvail: 'Disponible', statPaid: 'Pagado Real',
+    statActive: 'activos', statPaidLbl: 'pagados', statRemaining: 'días restantes',
+    statPctPres: 'del pres.',
+    // Gastos
+    gastosTodas: '🗂 Todas', gastosVuelos: '✈️ Vuelos', gastosHoteles: '🏨 Hoteles',
+    gastosTransfers: '🚗 Transfers', gastosExcurs: '🗺️ Excurs.', gastosComidas: '🍽️ Comidas',
+    gastosSeguros: '🛡️ Seguros', gastosCompras: '🛍️ Compras',
+    todosgastos: 'Todos los Gastos', nuevoGasto: '＋ Nuevo Gasto',
+    // Expense form
+    fDescLabel: 'Descripción *', fCatLabel: 'Categoría', fEstadoLabel: 'Estado',
+    fAmountLabel: 'Importe *', fCurLabel: 'Moneda', fDateLabel: 'Fecha',
+    fProvLabel: 'Proveedor', fRefLabel: 'Referencia / Localizador',
+    fNotesLabel: 'Notas', fAdjLabel: '📎 Adjunto (URL de Google Drive, Dropbox…)',
+    fAdjHint: 'Sube el archivo a Drive → Obtener enlace → pégalo aquí',
+    fSaveBtn: '💾 Guardar Gasto', fCancelBtn: '✕ Cancelar edición',
+    fFlightData: '✈️ Datos de Vuelo', fTransferData: '🚗 Horario del Transfer',
+    fExcurData: '🗺️ Horario de la Excursión',
+    fDepDate: 'Fecha salida', fDepTime: 'Hora salida',
+    fArrDate: 'Fecha llegada', fArrTime: 'Hora llegada',
+    fNextDay: '⚠️ Llegada al día siguiente',
+    // States
+    estadoPendiente: '⏳ Pendiente', estadoReservado: '🔵 Reservado',
+    estadoPagado: '✅ Pagado', estadoCancelado: '❌ Cancelado',
+    // Itinerario
+    nuevaAct: '＋ Nueva Actividad', actTitulo: 'Título *', actTipo: 'Tipo',
+    actEstado: 'Estado', actHoraIni: 'Hora Inicio', actHoraFin: 'Hora Fin',
+    actLugar: 'Lugar', actRef: 'Referencia', actUrl: '📎 Adjunto (URL de Drive, Dropbox, reserva…)',
+    actUrlHint: 'Sube a Drive → Obtener enlace → pega aquí',
+    actNotes: 'Notas', actCoste: 'Coste (€)', actSaveBtn: '💾 Guardar Actividad',
+    actCancelBtn: '✕ Cancelar edición',
+    // Trip modal
+    tripModalNew: '＋ Nuevo Viaje', tripModalEdit: '✏️ Editar Viaje',
+    tripName: 'Nombre del viaje *', tripDest: 'Destino',
+    tripDateIni: 'Fecha inicio *', tripDateEnd: 'Fecha fin *',
+    tripBudget: 'Presupuesto total (€)', tripSave: '💾 Guardar',
+    // Share
+    shareTitle: '↑ Compartir viaje', shareClose: 'Cerrar',
+    // Toasts
+    toastSaved: '✅ Guardado', toastDeleted: '🗑 Eliminado', toastSynced: '☁️ Sincronizado',
+    toastError: '❌ Error', toastCopied: '📋 Copiado',
+    toastConnected: '✅ Conectado a Sheets', toastDisconnected: '🔌 Desconectado',
+    toastExported: '📊 Excel exportado',
+    // Empty states
+    emptyTrip: 'Crea un nuevo viaje para empezar',
+    emptyGastos: 'No hay gastos en esta categoría',
+    emptyActivities: 'No hay actividades este día',
+    // Confirm
+    confirmDelete: '¿Eliminar este elemento?',
+    confirmDeleteTrip: '¿Eliminar este viaje y todos sus datos?',
+    confirmClearData: '¿Borrar TODOS los datos locales? Esta acción no se puede deshacer.',
+    confirmYes: 'Sí, eliminar', confirmNo: 'Cancelar',
+    // Export
+    exportNoTrip: 'Selecciona un viaje primero',
+  },
+  en: {
+    // Nav
+    navResumen: '🏠 Summary', navItinerario: '🗓 Itinerary', navGastos: '💸 Expenses',
+    navGraficas: '📊 Charts', navPres: '🎯 Budget vs Real',
+    // Topbar
+    btnImportes: '💰 Amounts', btnNewTrip: '＋',
+    // Trip bar
+    tripLabel: '✈ Trip', btnEdit: '✏ Edit', btnDelete: '🗑 Delete',
+    // Config sidebar
+    cfgTitle: '⚙️ Settings', cfgLangTitle: '🌐 Idioma / Language',
+    cfgSheetsTitle: '🔗 Google Sheets', cfgScriptLabel: 'Script URL',
+    cfgSecretLabel: 'Secret key', cfgSheetsBtn: '💾 Connect',
+    cfgSyncBtn: '☁️ Sync', cfgRefreshBtn: '🔄 Refresh',
+    cfgDisconnectBtn: '🔌 Disconnect', cfgCatsTitle: '🏷️ Expense Types',
+    cfgAddCatLabel: 'Add custom category:',
+    cfgAddBtn: '＋', cfgExportTitle: '📤 Export Data',
+    cfgExportGastos: '📊 Export Expenses to Excel',
+    cfgExportItin: '🗓 Export Itinerary to Excel',
+    cfgExportTodo: '📦 Export Everything to Excel',
+    cfgDangerTitle: '⚠️ Danger Zone', cfgClearBtn: '🗑 Clear all local data',
+    // Stats
+    statDays: 'Days', statExpenses: 'Expenses', statBudget: 'Budget',
+    statSpent: 'Total Spent', statAvail: 'Available', statPaid: 'Actually Paid',
+    statActive: 'active', statPaidLbl: 'paid', statRemaining: 'days remaining',
+    statPctPres: 'of budget',
+    // Gastos
+    gastosTodas: '🗂 All', gastosVuelos: '✈️ Flights', gastosHoteles: '🏨 Hotels',
+    gastosTransfers: '🚗 Transfers', gastosExcurs: '🗺️ Excurs.', gastosComidas: '🍽️ Food',
+    gastosSeguros: '🛡️ Insurance', gastosCompras: '🛍️ Shopping',
+    todosgastos: 'All Expenses', nuevoGasto: '＋ New Expense',
+    // Expense form
+    fDescLabel: 'Description *', fCatLabel: 'Category', fEstadoLabel: 'Status',
+    fAmountLabel: 'Amount *', fCurLabel: 'Currency', fDateLabel: 'Date',
+    fProvLabel: 'Provider', fRefLabel: 'Reference / Booking code',
+    fNotesLabel: 'Notes', fAdjLabel: '📎 Attachment (Google Drive, Dropbox URL…)',
+    fAdjHint: 'Upload to Drive → Get link → paste here',
+    fSaveBtn: '💾 Save Expense', fCancelBtn: '✕ Cancel edit',
+    fFlightData: '✈️ Flight Details', fTransferData: '🚗 Transfer Schedule',
+    fExcurData: '🗺️ Excursion Schedule',
+    fDepDate: 'Departure date', fDepTime: 'Departure time',
+    fArrDate: 'Arrival date', fArrTime: 'Arrival time',
+    fNextDay: '⚠️ Next day arrival',
+    // States
+    estadoPendiente: '⏳ Pending', estadoReservado: '🔵 Reserved',
+    estadoPagado: '✅ Paid', estadoCancelado: '❌ Cancelled',
+    // Itinerario
+    nuevaAct: '＋ New Activity', actTitulo: 'Title *', actTipo: 'Type',
+    actEstado: 'Status', actHoraIni: 'Start time', actHoraFin: 'End time',
+    actLugar: 'Place', actRef: 'Reference', actUrl: '📎 Attachment (Drive, Dropbox, booking URL…)',
+    actUrlHint: 'Upload to Drive → Get link → paste here',
+    actNotes: 'Notes', actCoste: 'Cost (€)', actSaveBtn: '💾 Save Activity',
+    actCancelBtn: '✕ Cancel edit',
+    // Trip modal
+    tripModalNew: '＋ New Trip', tripModalEdit: '✏️ Edit Trip',
+    tripName: 'Trip name *', tripDest: 'Destination',
+    tripDateIni: 'Start date *', tripDateEnd: 'End date *',
+    tripBudget: 'Total budget (€)', tripSave: '💾 Save',
+    // Share
+    shareTitle: '↑ Share trip', shareClose: 'Close',
+    // Toasts
+    toastSaved: '✅ Saved', toastDeleted: '🗑 Deleted', toastSynced: '☁️ Synced',
+    toastError: '❌ Error', toastCopied: '📋 Copied',
+    toastConnected: '✅ Connected to Sheets', toastDisconnected: '🔌 Disconnected',
+    toastExported: '📊 Excel exported',
+    // Empty states
+    emptyTrip: 'Create a new trip to get started',
+    emptyGastos: 'No expenses in this category',
+    emptyActivities: 'No activities on this day',
+    // Confirm
+    confirmDelete: 'Delete this item?',
+    confirmDeleteTrip: 'Delete this trip and all its data?',
+    confirmClearData: 'Clear ALL local data? This cannot be undone.',
+    confirmYes: 'Yes, delete', confirmNo: 'Cancel',
+    // Export
+    exportNoTrip: 'Select a trip first',
+  }
+};
+
+function t(key) {
+  return (I18N[State.lang] || I18N.es)[key] || key;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CONFIG MODULE
+// ══════════════════════════════════════════════════════════════════
+const Config = {
+
+  open() {
+    // Populate Sheets fields
+    document.getElementById('cfgScript').value = CFG.scriptUrl || '';
+    document.getElementById('cfgSecret').value = CFG.secret || '';
+    // Update status
+    const connected = !!CFG.scriptUrl;
+    document.getElementById('cfgSheetsStatus').textContent = connected ? '✅ Conectado' : '⚪ No conectado';
+    // Render cats list
+    this.renderCats();
+    // Update lang buttons
+    this.updateLangButtons();
+    // Apply translations to sidebar
+    this.applyTranslations();
+    // Show
+    document.getElementById('sidebar').style.right = '0';
+    document.getElementById('sidebarOverlay').style.display = 'block';
+  },
+
+  close() {
+    document.getElementById('sidebar').style.right = '-360px';
+    document.getElementById('sidebarOverlay').style.display = 'none';
+  },
+
+  updateLangButtons() {
+    document.getElementById('btnLangES').className = State.lang === 'es' ? 'btn btn-primary' : 'btn btn-ghost';
+    document.getElementById('btnLangEN').className = State.lang === 'en' ? 'btn btn-primary' : 'btn btn-ghost';
+  },
+
+  setLang(lang) {
+    State.lang = lang;
+    try { localStorage.setItem('a360_lang', lang); } catch(e) {}
+    this.updateLangButtons();
+    this.applyTranslations();
+    App.applyLang();
+  },
+
+  applyTranslations() {
+    const ids = ['cfgTitle','cfgLangTitle','cfgSheetsTitle','cfgScriptLabel','cfgSecretLabel',
+      'cfgSheetsBtn','cfgSyncBtn','cfgRefreshBtn','cfgDisconnectBtn','cfgCatsTitle',
+      'cfgAddCatLabel','cfgAddBtn','cfgExportTitle','cfgExportGastos','cfgExportItin',
+      'cfgExportTodo','cfgDangerTitle','cfgClearBtn'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = t(id.replace('cfg','cfg'));
+    });
+    // Map id to translation key
+    const map = {
+      cfgTitle: 'cfgTitle', cfgLangTitle: 'cfgLangTitle', cfgSheetsTitle: 'cfgSheetsTitle',
+      cfgScriptLabel: 'cfgScriptLabel', cfgSecretLabel: 'cfgSecretLabel',
+      cfgSheetsBtn: 'cfgSheetsBtn', cfgSyncBtn: 'cfgSyncBtn', cfgRefreshBtn: 'cfgRefreshBtn',
+      cfgDisconnectBtn: 'cfgDisconnectBtn', cfgCatsTitle: 'cfgCatsTitle',
+      cfgAddCatLabel: 'cfgAddCatLabel', cfgAddBtn: 'cfgAddBtn',
+      cfgExportTitle: 'cfgExportTitle', cfgExportGastos: 'cfgExportGastos',
+      cfgExportItin: 'cfgExportItin', cfgExportTodo: 'cfgExportTodo',
+      cfgDangerTitle: 'cfgDangerTitle', cfgClearBtn: 'cfgClearBtn',
+    };
+    Object.entries(map).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = t(key);
+    });
+  },
+
+  saveSheets() {
+    const script = document.getElementById('cfgScript').value.trim();
+    const secret = document.getElementById('cfgSecret').value.trim();
+    if (!script || !secret) { App.toast(t('toastError') + ': campos vacíos', 'error'); return; }
+    CFG.scriptUrl = script;
+    CFG.secret    = secret;
+    CFG.save();
+    document.getElementById('cfgSheetsStatus').textContent = '✅ ' + (State.lang === 'en' ? 'Connected' : 'Conectado');
+    App.toast(t('toastConnected'));
+    document.getElementById('btnSync').style.display = '';
+    // Auto-sync
+    Sheets.sync();
+  },
+
+  disconnectSheets() {
+    CFG.scriptUrl = ''; CFG.secret = '';
+    CFG.save();
+    document.getElementById('cfgScript').value = '';
+    document.getElementById('cfgSecret').value = '';
+    document.getElementById('cfgSheetsStatus').textContent = '⚪ ' + (State.lang === 'en' ? 'Disconnected' : 'Desconectado');
+    App.toast(t('toastDisconnected'), 'info');
+    document.getElementById('btnSync').style.display = 'none';
+    document.getElementById('connBadge').style.display = 'none';
+  },
+
+  // ── Custom categories ──────────────────────────────────────────
+  renderCats() {
+    const defaultKeys = ['vuelos','hoteles','transfers','excursiones','comidas','seguros','compras'];
+    const customCats  = JSON.parse(localStorage.getItem('a360_custom_cats') || '[]');
+    const el = document.getElementById('cfgCatsList');
+    let html = '';
+    // Default cats (read-only)
+    defaultKeys.forEach(k => {
+      const c = CATS[k];
+      if (!c) return;
+      html += `<div class="cfg-cat-row">
+        <span class="cfg-cat-icon">${c.icon}</span>
+        <span class="cfg-cat-name">${c.label}</span>
+        <span class="cfg-cat-default">${State.lang === 'en' ? 'default' : 'defecto'}</span>
+      </div>`;
+    });
+    // Custom cats (deletable)
+    customCats.forEach((c, i) => {
+      html += `<div class="cfg-cat-row">
+        <span class="cfg-cat-icon">${c.icon}</span>
+        <span class="cfg-cat-name">${c.label}</span>
+        <button class="btn btn-danger btn-xs" onclick="Config.deleteCat(${i})" style="padding:2px 6px">✕</button>
+      </div>`;
+    });
+    el.innerHTML = html;
+  },
+
+  addCat() {
+    const icon  = document.getElementById('cfgNewCatIcon').value.trim() || '📌';
+    const name  = document.getElementById('cfgNewCatName').value.trim();
+    if (!name) { App.toast(t('toastError'), 'error'); return; }
+    const key   = 'custom_' + name.toLowerCase().replace(/\s+/g,'_');
+    const color = 'var(--sky)';
+    // Add to CATS runtime
+    CATS[key] = { icon, label: name, color };
+    // Persist
+    const customCats = JSON.parse(localStorage.getItem('a360_custom_cats') || '[]');
+    customCats.push({ key, icon, label: name, color });
+    localStorage.setItem('a360_custom_cats', JSON.stringify(customCats));
+    // Add to form selects
+    App.addCatToSelects(key, icon, name);
+    document.getElementById('cfgNewCatIcon').value = '';
+    document.getElementById('cfgNewCatName').value = '';
+    this.renderCats();
+    App.toast('✅ ' + (State.lang === 'en' ? 'Category added' : 'Categoría añadida'));
+  },
+
+  deleteCat(i) {
+    const customCats = JSON.parse(localStorage.getItem('a360_custom_cats') || '[]');
+    const cat = customCats[i];
+    if (cat) { delete CATS[cat.key]; }
+    customCats.splice(i, 1);
+    localStorage.setItem('a360_custom_cats', JSON.stringify(customCats));
+    this.renderCats();
+  },
+
+  // ── Export to Excel ───────────────────────────────────────────
+  exportExcel(type) {
+    const trip = App.currentTrip();
+    if (!trip) { App.toast(t('exportNoTrip'), 'error'); return; }
+
+    let csvContent = '';
+    const filename = trip.nombre.replace(/\s+/g,'-') + '-' + type + '.csv';
+
+    if (type === 'gastos' || type === 'todo') {
+      const exps = [
+        ...DB.expenses.filter(e => e.viaje_id === trip.id),
+        ...App.getActsAsExpenses(trip.id)
+      ];
+      const hdr1 = State.lang === 'en' ? 'Description,Category,Status,Amount,Currency,Date,Provider,Reference,Notes' : 'Descripción,Categoría,Estado,Importe,Moneda,Fecha,Proveedor,Referencia,Notas';
+      csvContent += hdr1 + '\r\n';
+      exps.forEach(e => {
+        csvContent += [e.descripcion,e.categoria,e.estado,e.importe,e.moneda||'EUR',e.fecha||'',e.proveedor||'',e.referencia||'',e.notas||'']
+          .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',') + '\r\n';
+      });
+    }
+
+    if (type === 'itinerario' || type === 'todo') {
+      if (type === 'todo') csvContent += '\r\n\r\n';
+      const acts = DB.activities.filter(a => a.viaje_id === trip.id)
+        .sort((a,b) => (a.fecha||'').localeCompare(b.fecha||''));
+      const hdr2 = State.lang === 'en' ? 'Date,Title,Type,Status,Start,End,Place,Cost,Notes' : 'Fecha,Título,Tipo,Estado,Hora inicio,Hora fin,Lugar,Coste,Notas';
+      csvContent += hdr2 + '\r\n';
+      acts.forEach(a => {
+        csvContent += [a.fecha||'',a.titulo||'',a.tipo||'',a.estado||'',a.hora_inicio||'',a.hora_fin||'',a.lugar||'',a.coste||0,a.notas||'']
+          .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',') + '\r\n';
+      });
+    }
+
+    // Download
+    const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    this.close();
+    App.toast(t('toastExported'));
+  },
+
+  clearAllData() {
+    if (!confirm(t('confirmClearData'))) return;
+    localStorage.clear();
+    location.reload();
+  },
+};
+
+App.init().then(() => {
+  App.applyLang();
+});
 
 // ── Service Worker: network-first, always fresh ──────────────────
 if ('serviceWorker' in navigator) {
