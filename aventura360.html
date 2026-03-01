@@ -1098,21 +1098,31 @@ const App = {
 
   async init() {
     CFG.load();
-    this.loadDB();
 
-    // Restore Sheets badge if previously connected
     if (CFG.scriptUrl && CFG.secret) {
+      // ── SHEETS MODE: Sheets is the single source of truth ──
       Sheets._setBadge(true);
-      // Auto-load from Sheets on startup
+      this.render(); // render empty state first
+      App.toast('Cargando datos de Sheets…', 'info');
       try {
         const r = await Sheets.call({ action: 'loadAll', secret: CFG.secret });
-        if (!r.error && r.trips && r.trips.length > 0) {
-          Sheets._importFromSheets(r);
+        if (r.error) throw new Error(r.error);
+        if (r.trips && r.trips.length > 0) {
+          Sheets._importFromSheets(r); // saves to localStorage cache too
+          App.toast('Datos cargados ✓', 'success');
+        } else {
+          // Sheets empty — start fresh (don't push local garbage)
+          DB.trips = []; DB.expenses = []; DB.activities = [];
+          App.toast('Sheets vacío — listo para empezar', 'info');
         }
-      } catch(e) { /* offline — use local data */ }
-    } else if (DB.trips.length === 0) {
-      Demo.load();
-      this.saveDB();
+      } catch(e) {
+        // Offline: fall back to local cache
+        this.loadDB();
+        App.toast('Sin conexión — usando caché local', 'info');
+      }
+    } else {
+      // ── LOCAL MODE ──
+      this.loadDB();
     }
 
     document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
@@ -1131,9 +1141,18 @@ const App = {
     try { localStorage.setItem('a360_trips',      JSON.stringify(DB.trips)); } catch(e) {}
     try { localStorage.setItem('a360_expenses',   JSON.stringify(DB.expenses)); } catch(e) {}
     try { localStorage.setItem('a360_activities', JSON.stringify(DB.activities)); } catch(e) {}
-    // Auto-push to Sheets if connected
+    // Mark as pending sync
     if (CFG.scriptUrl && CFG.secret) {
-      Sheets.pushToSheets().catch(() => {}); // fire & forget
+      this._pendingSync = true;
+      clearTimeout(this._syncTimer);
+      this._syncTimer = setTimeout(() => {
+        if (this._pendingSync) {
+          this._pendingSync = false;
+          Sheets.pushToSheets()
+            .then(() => App.toast('Guardado en Sheets ✓', 'success'))
+            .catch(() => App.toast('Error al guardar en Sheets', 'error'));
+        }
+      }, 1500); // debounce 1.5s to batch multiple changes
     }
   },
 
@@ -2303,17 +2322,14 @@ const Sheets = {
     btn.textContent = '⏳';
     btn.disabled = true;
     try {
-      // 1. Cargar desde Sheets
+      // Sheets is master — pull and replace local
       const r = await this.call({ action: 'loadAll', secret: CFG.secret });
       if (r.error) throw new Error(r.error);
-      // 2. Merge: Sheets tiene prioridad para datos existentes, local añade los nuevos
       this._importFromSheets(r);
-      // 3. Subir estado final a Sheets
-      await this.pushToSheets();
       App.render();
       App.toast('Sincronizado con Sheets ✓', 'success');
     } catch(e) {
-      App.toast('Error al sincronizar: ' + e.message, 'error');
+      App.toast('Error: ' + e.message, 'error');
     } finally {
       btn.textContent = '☁️';
       btn.disabled = false;
