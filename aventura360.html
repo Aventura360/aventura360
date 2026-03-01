@@ -1347,6 +1347,11 @@ const App = {
         moneda:       moneda,
         importe_base: parseFloat(a.coste) || 0,
         fecha:        a.fecha || '',
+        hora_inicio:  a.hora_inicio || a.dep_time || '',
+        hora_fin:     a.hora_fin    || a.arr_time || '',
+        arr_date:     a.arr_date    || '',
+        proveedor:    a.lugar       || '',
+        referencia:   a.referencia  || '',
         _fromActivity: true,
       }));
   },
@@ -1501,6 +1506,18 @@ const App = {
     };
     input.addEventListener('blur', save);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+  },
+
+  goToActivity(actId) {
+    // Switch to Itinerario tab and navigate to the day of that activity
+    const a = DB.activities.find(x => x.id === actId);
+    if (!a) return;
+    State.currentDay = a.fecha;
+    const tab = document.querySelector('.nav-tab[onclick*="itinerario"]');
+    if (tab) this.switchTab('itinerario', tab);
+    Itin.render();
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
   hardRefresh() {
@@ -1697,10 +1714,16 @@ const Expenses = {
         const statusClass = 'status-' + (e.estado || 'pendiente');
         const dispAmt = toDisplay(e.importe, e.moneda);
         const originalAmt = State.showAmounts && e.moneda !== State.displayCur ? ` <span style="font-size:10px;color:var(--text3)">(${fmtNum(e.importe)} ${e.moneda})</span>` : '';
+        // Build time info line (works for both expenses and activities)
+        const tStart = e.dep_time || e.hora_inicio || '';
+        const tEnd   = e.arr_time || e.hora_fin   || '';
+        const dateEnd = e.arr_date && e.arr_date !== e.fecha ? ` <span style="font-size:10px;color:var(--text3)">(llega ${e.arr_date})</span>` : '';
+        const timeStr = tStart ? `<div style="font-size:11px;color:var(--blue);font-family:'Space Mono',monospace;margin-top:2px">🕐 ${tStart}${tEnd ? ' → ' + tEnd : ''}${dateEnd}</div>` : '';
+        const provStr = e.proveedor ? `<div style="font-size:11px;color:var(--text2)">${App.esc(e.proveedor)}${e.referencia ? ' · <span style=\'color:var(--text3)\'>' + App.esc(e.referencia) + '</span>' : ''}</div>` : '';
         return `<tr>
           <td data-label="">
             <div style="font-weight:600">${App.esc(e.descripcion)}</div>
-            ${e.proveedor ? `<div style="font-size:11px;color:var(--text2)">${App.esc(e.proveedor)}${e.referencia ? ' · ' + App.esc(e.referencia) : ''}</div>` : ''}
+            ${provStr}${timeStr}
           </td>
           <td data-label="Categoría"><span class="cat-pill" style="background:${c.color}22;color:${c.color}">${c.icon} ${c.label}</span></td>
           <td data-label="Estado"><span class="status-dot ${statusClass}">${e.estado || 'pendiente'}</span></td>
@@ -1708,7 +1731,7 @@ const Expenses = {
           <td data-label="Fecha" style="color:var(--text2);font-size:12px">${e.fecha || '—'}</td>
           <td data-label="">
             ${e._fromActivity
-              ? '<span style="font-size:10px;color:var(--text3);background:var(--s2);padding:2px 7px;border-radius:6px">📅 Itinerario</span>'
+              ? `<button class="btn btn-ghost btn-xs" onclick="App.goToActivity('${e.id.replace('act_','')}')" title="Ver en Itinerario">🗓 Ver</button>`
               : `<div style="display:flex;gap:4px">
                   <button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
                   <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>
