@@ -1343,9 +1343,9 @@ const App = {
         descripcion:  a.titulo,
         categoria:    tipoToCat[a.tipo] || 'excursiones',
         estado:       a.estado || 'pendiente',
-        importe:      a.coste || 0,
+        importe:      parseFloat(a.coste) || 0,
         moneda:       moneda,
-        importe_base: a.coste || 0,
+        importe_base: parseFloat(a.coste) || 0,
         fecha:        a.fecha || '',
         _fromActivity: true,
       }));
@@ -1720,7 +1720,10 @@ const Expenses = {
 
   renderBadges() {
     const t = App.currentTrip();
-    const exps = t ? DB.expenses.filter(e => e.viaje_id === t.id) : [];
+    const exps = t ? [
+      ...DB.expenses.filter(e => e.viaje_id === t.id),
+      ...App.getActsAsExpenses(t.id)
+    ] : [];
     document.getElementById('cnt-todas').textContent = exps.length;
     Object.keys(CATS).forEach(c => {
       const el = document.getElementById('cnt-' + c);
