@@ -330,9 +330,10 @@ textarea.inp{min-height:72px;resize:vertical}
   .topbar{height:52px;padding:0 10px;gap:6px;overflow:visible}
   .logo-wrapper{display:none}
   .logo-mobile{display:flex}
-  .topbar-right{gap:5px;flex-shrink:0;flex-wrap:nowrap}
-  .topbar-right .btn{font-size:11px;padding:5px 9px}
-  #connBadge{font-size:10px;padding:2px 6px}
+  .topbar-right{gap:4px;flex-shrink:0;flex-wrap:nowrap}
+  .topbar-right .btn{font-size:11px;padding:5px 8px}
+  #connBadge{font-size:10px;padding:2px 6px;cursor:pointer}
+  .mobile-hide{display:none !important}
 
   /* ── Container ── */
   .container{padding:10px;padding-bottom:10px}
@@ -368,11 +369,12 @@ textarea.inp{min-height:72px;resize:vertical}
   /* ── Expense table → card list ── */
   .exp-table{width:100%}
   .exp-table thead{display:none}
-  .exp-table tbody tr{display:block;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;padding:10px 12px;background:var(--s1)}
+  .exp-table tbody tr{display:block;border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;padding:12px;background:var(--s1)}
   .exp-table tbody tr:hover td{background:transparent}
-  .exp-table td{display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;border:none;font-size:12px;word-break:break-word}
-  .exp-table td:first-child{border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px;font-size:13px}
-  .exp-table td[data-label]:not([data-label=""])::before{content:attr(data-label);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-right:8px;padding-top:1px}
+  .exp-table td{display:grid;grid-template-columns:80px 1fr;align-items:start;padding:3px 0;border:none;font-size:12px;gap:6px}
+  .exp-table td:first-child{display:block;grid-template-columns:unset;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:6px;font-size:13px}
+  .exp-table td:last-child{display:flex;grid-template-columns:unset;justify-content:flex-end;padding-top:8px}
+  .exp-table td[data-label]:not([data-label=""])::before{content:attr(data-label);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding-top:2px}
 
   /* ── Cat tabs ── */
   .cat-tabs{padding:6px 8px 0;gap:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
@@ -454,6 +456,7 @@ textarea.inp{min-height:72px;resize:vertical}
 
   /* ── Resumen summary card ── */
   #resumenContent .day-header-num{font-size:18px}
+  #resumenContent > div{padding:0}
 }
 
 /* ════════════════════════════════════════
@@ -467,6 +470,14 @@ textarea.inp{min-height:72px;resize:vertical}
   .topbar-right .btn{font-size:10px;padding:4px 7px}
   .tl-card{padding:8px 10px}
   .day-chip{min-width:52px;padding:6px 6px}
+}
+
+/* ── Short labels on mobile ── */
+@media(max-width:600px){
+  .btn-label-full{display:none}
+  .btn-label-short{display:inline !important}
+  .nav-label-full{display:none}
+  .nav-label-short{display:inline !important}
 }
 </style>
 </head>
@@ -527,12 +538,12 @@ textarea.inp{min-height:72px;resize:vertical}
   </div>
 
   <div class="topbar-right">
-    <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes">💰 Importes</button>
-    <span class="badge" id="connBadge" style="display:none"></span>
-    <button class="btn btn-ghost btn-sm" onclick="Sheets.openConfig()" title="Conectar Google Sheets">🔗</button>
-    <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none" title="Sincronizar con Sheets">☁️</button>
-    <button class="btn btn-ghost btn-sm" onclick="App.hardRefresh()" title="Actualizar app">🔄</button>
-    <button class="btn btn-primary btn-sm" onclick="Trips.openModal()">＋</button>
+    <button class="btn btn-ghost btn-sm" id="btnToggleAmounts" onclick="App.toggleAmounts()" title="Mostrar/ocultar importes"><span class="btn-label-full">💰 Importes</span><span class="btn-label-short" style="display:none">💰</span></button>
+    <span class="badge" id="connBadge" style="display:none" onclick="Sheets.openConfig()" title="Configuración Sheets"></span>
+    <button class="btn btn-ghost btn-sm mobile-hide" onclick="Sheets.openConfig()" title="Conectar Google Sheets" id="btnSheetsConfig">🔗</button>
+    <button class="btn btn-ghost btn-sm" id="btnSync" onclick="Sheets.sync()" style="display:none" title="Sincronizar">☁️</button>
+    <button class="btn btn-ghost btn-sm mobile-hide" onclick="App.hardRefresh()" title="Actualizar app">🔄</button>
+    <button class="btn btn-primary btn-sm" onclick="Trips.openModal()" title="Nuevo viaje">＋</button>
   </div>
 </div>
 
@@ -560,9 +571,6 @@ textarea.inp{min-height:72px;resize:vertical}
 
   <!-- ═══════════ VIEW: RESUMEN ═══════════ -->
   <div class="view active" id="view-resumen">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="btn btn-primary btn-sm" onclick="Share.openItinerary()">↑ Compartir</button>
-    </div>
     <div id="resumenContent"></div>
   </div>
 
