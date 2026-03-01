@@ -1768,13 +1768,14 @@ const Expenses = {
           : `<button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
              <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>`;
         return `<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-weight:700;font-size:14px">${App.esc(e.descripcion)}${adjStr}</div>
-              ${e.proveedor ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${App.esc(e.proveedor)}</div>` : ''}
-              ${timeStr}
+          <div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div style="font-weight:700;font-size:14px;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${App.esc(e.descripcion)}${adjStr}</div>
+              <div style="font-weight:700;font-size:14px;font-family:'Space Mono',monospace;color:var(--green);flex-shrink:0">${amtStr}</div>
             </div>
-            <div style="font-weight:700;font-size:15px;font-family:'Space Mono',monospace;color:var(--text);flex-shrink:0;margin-left:10px;text-align:right;word-break:break-word;max-width:45%">${amtStr}${origStr}</div>
+            ${e.proveedor ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${App.esc(e.proveedor)}</div>` : ''}
+            ${origStr ? `<div style="font-size:10px;color:var(--text3)">${origStr}</div>` : ''}
+            ${timeStr}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
