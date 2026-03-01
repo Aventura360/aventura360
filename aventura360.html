@@ -1323,18 +1323,30 @@ const App = {
   getActsAsExpenses(tripId) {
     const t = DB.trips.find(x => x.id === tripId);
     const moneda = t ? (t.moneda || 'EUR') : 'EUR';
+    // Map activity tipos → expense categorías
+    const tipoToCat = {
+      vuelo:       'vuelos',
+      alojamiento: 'hoteles',
+      transporte:  'transfers',
+      comida:      'comidas',
+      actividad:   'excursiones',
+      visita:      'excursiones',
+      entrada:     'excursiones',
+      compras:     'excursiones',
+      otro:        'excursiones',
+    };
     return DB.activities
       .filter(a => a.viaje_id === tripId && (a.coste || 0) > 0)
       .map(a => ({
-        id:          'act_' + a.id,
-        viaje_id:    a.viaje_id,
-        descripcion: a.titulo,
-        categoria:   a.tipo || 'actividad',
-        estado:      a.estado || 'pendiente',
-        importe:     a.coste || 0,
-        moneda:      moneda,
+        id:           'act_' + a.id,
+        viaje_id:     a.viaje_id,
+        descripcion:  a.titulo,
+        categoria:    tipoToCat[a.tipo] || 'excursiones',
+        estado:       a.estado || 'pendiente',
+        importe:      a.coste || 0,
+        moneda:       moneda,
         importe_base: a.coste || 0,
-        fecha:       a.fecha || '',
+        fecha:        a.fecha || '',
         _fromActivity: true,
       }));
   },
@@ -1644,7 +1656,11 @@ const Expenses = {
       return;
     }
     const search = document.getElementById('searchInp').value.toLowerCase();
-    let exps = DB.expenses.filter(e => e.viaje_id === t.id);
+    // Merge manual expenses + activity costs
+    let exps = [
+      ...DB.expenses.filter(e => e.viaje_id === t.id),
+      ...App.getActsAsExpenses(t.id)
+    ];
     if (State.catFilter !== 'todas') exps = exps.filter(e => e.categoria === State.catFilter);
     if (search) exps = exps.filter(e =>
       (e.descripcion || '').toLowerCase().includes(search) ||
@@ -1671,8 +1687,7 @@ const Expenses = {
       return;
     }
 
-    const actExpsForTotal = App.getActsAsExpenses(t.id);
-    const total = [...exps.filter(e => e.estado !== 'cancelado'), ...actExpsForTotal.filter(a => a.estado !== 'cancelado')]
+    const total = exps.filter(e => e.estado !== 'cancelado')
       .reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
     document.getElementById('listTotal').textContent = State.showAmounts ? 'Total: ' + fmt(total) : '';
 
@@ -1692,10 +1707,12 @@ const Expenses = {
           <td data-label="Importe"><span class="mono">${State.showAmounts ? fmt(dispAmt) : '···'}</span>${originalAmt}</td>
           <td data-label="Fecha" style="color:var(--text2);font-size:12px">${e.fecha || '—'}</td>
           <td data-label="">
-            <div style="display:flex;gap:4px">
-              <button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
-              <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>
-            </div>
+            ${e._fromActivity
+              ? '<span style="font-size:10px;color:var(--text3);background:var(--s2);padding:2px 7px;border-radius:6px">📅 Itinerario</span>'
+              : `<div style="display:flex;gap:4px">
+                  <button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
+                  <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>
+                </div>`}
           </td>
         </tr>`;
       }).join('') + '</tbody></table></div>';
