@@ -301,6 +301,9 @@ textarea.inp{min-height:72px;resize:vertical}
 /* ════════════════════════════════════════
    RESPONSIVE — TABLET (≤768px)
 ════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   RESPONSIVE — TABLET (≤768px)
+════════════════════════════════════════ */
 @media(max-width:768px){
   .charts-grid{grid-template-columns:1fr}
   .itin-layout{grid-template-columns:1fr}
@@ -310,132 +313,160 @@ textarea.inp{min-height:72px;resize:vertical}
   .modal{padding:20px}
 }
 
+/* ── MOBILE LOGO (hidden on desktop) ── */
+.logo-mobile{display:none;position:relative;align-items:center;flex-shrink:0;height:40px;width:150px}
+.logo-mobile-plane{position:absolute;left:4px;top:4px;font-size:13px;transform:rotate(-35deg);filter:drop-shadow(0 0 5px rgba(79,142,247,.95));z-index:3;line-height:1}
+.logo-mobile-globe{position:absolute;right:0;bottom:2px;font-size:12px;filter:drop-shadow(0 0 5px rgba(124,92,250,.9));z-index:3;line-height:1}
+.logo-mobile-text{position:relative;z-index:2;display:flex;align-items:baseline;gap:0;padding-left:22px;padding-top:12px}
+.logo-mobile-a{font-size:15px;font-weight:900;letter-spacing:.5px;background:linear-gradient(90deg,#4f8ef7,#7c5cfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-mobile-3{font-size:15px;font-weight:900;background:linear-gradient(90deg,#7c5cfa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
 /* ════════════════════════════════════════
    RESPONSIVE — MÓVIL (≤600px)
 ════════════════════════════════════════ */
 @media(max-width:600px){
 
-  /* Topbar */
-  .topbar{height:52px;padding:0 10px;flex-wrap:nowrap;gap:6px}
-  .logo-wrapper{display:none}       /* hide desktop logo */
-  .logo-mobile{display:flex}        /* show mobile logo */
-  .topbar-right{gap:4px;flex-wrap:nowrap;flex-shrink:0}
-  .topbar-right .btn-sm{font-size:11px;padding:4px 9px;white-space:nowrap}
-  #btnToggleAmounts{font-size:11px;padding:4px 9px}
+  /* ── Topbar ── */
+  .topbar{height:52px;padding:0 10px;gap:6px;overflow:visible}
+  .logo-wrapper{display:none}
+  .logo-mobile{display:flex}
+  .topbar-right{gap:5px;flex-shrink:0;flex-wrap:nowrap}
+  .topbar-right .btn{font-size:11px;padding:5px 9px}
   #connBadge{font-size:10px;padding:2px 6px}
 
-  /* Container */
-  .container{padding:10px}
+  /* ── Container ── */
+  .container{padding:10px;padding-bottom:10px}
 
-  /* Trip bar */
-  .trip-bar{padding:8px 10px;gap:6px}
-  .trip-sel{font-size:13px;padding:6px 10px}
+  /* ── Trip bar ── */
+  .trip-bar{padding:8px 10px;gap:6px;flex-wrap:wrap}
+  .trip-sel{font-size:13px;padding:6px 10px;min-width:0;flex:1}
   .trip-label{display:none}
 
-  /* Nav tabs: scrollable horizontal */
-  .nav-tabs{gap:2px;padding:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;display:flex}
+  /* ── Nav tabs: horizontal scroll ── */
+  .nav-tabs{gap:2px;padding:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
   .nav-tabs::-webkit-scrollbar{display:none}
-  .nav-tab{flex-shrink:0;padding:6px 10px;font-size:11px;white-space:nowrap}
+  .nav-tab{flex-shrink:0;padding:7px 11px;font-size:12px;white-space:nowrap}
 
-  /* Stats grid: 2 columnas */
+  /* ── Stats: 2 cols ── */
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-  .stat-card{padding:12px}
+  .stat-card{padding:12px 10px}
   .stat-icon{font-size:20px;margin-bottom:4px}
-  .stat-val{font-size:18px}
-  .stat-label{font-size:9px}
+  .stat-val{font-size:17px}
+  .stat-label{font-size:9px;letter-spacing:.5px}
+  .stat-sub{font-size:10px}
 
-  /* Currency bar */
-  .currency-bar{padding:8px 10px;gap:6px}
+  /* ── Currency bar ── */
+  .currency-bar{padding:8px 10px;gap:6px;flex-wrap:wrap}
   .rate-info{display:none}
 
-  /* Layout 2 col */
+  /* ── Layouts ── */
   .layout2{grid-template-columns:1fr}
   .frow{grid-template-columns:1fr}
+  .itin-layout{grid-template-columns:1fr}
+  .charts-grid{grid-template-columns:1fr}
 
-  /* Expense table: card layout */
+  /* ── Expense table → card list ── */
+  .exp-table{width:100%}
   .exp-table thead{display:none}
-  .exp-table tr{display:block;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;padding:10px 12px;background:var(--s1)}
-  .exp-table td{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border:none;font-size:12px}
-  .exp-table td:first-child{font-weight:600;font-size:13px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px}
-  .exp-table td::before{content:attr(data-label);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-right:8px}
+  .exp-table tbody tr{display:block;border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;padding:10px 12px;background:var(--s1)}
+  .exp-table tbody tr:hover td{background:transparent}
+  .exp-table td{display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;border:none;font-size:12px;word-break:break-word}
+  .exp-table td:first-child{border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px;font-size:13px}
+  .exp-table td[data-label]:not([data-label=""])::before{content:attr(data-label);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-right:8px;padding-top:1px}
 
-  /* Cat tabs */
-  .cat-tabs{padding:8px 10px 0;gap:3px}
-  .cat-tab{padding:5px 9px;font-size:11px}
+  /* ── Cat tabs ── */
+  .cat-tabs{padding:6px 8px 0;gap:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .cat-tabs::-webkit-scrollbar{display:none}
+  .cat-tab{flex-shrink:0;padding:5px 9px;font-size:11px}
 
-  /* Day nav chips */
-  .day-chip{min-width:56px;padding:7px 10px}
+  /* ── Day nav chips ── */
+  .day-nav{gap:6px;padding-bottom:10px}
+  .day-chip{min-width:58px;padding:7px 8px}
   .day-chip .dc-num{font-size:14px}
+  .day-chip .dc-date{font-size:9px}
 
-  /* Day header */
-  .day-header-card{padding:10px 12px;gap:6px}
-  .day-header-num{font-size:22px}
+  /* ── Day header card ── */
+  .day-header-card{padding:10px 12px;gap:8px}
+  .day-header-num{font-size:20px}
   .day-header-date{font-size:11px}
+  .day-header-stats{gap:12px}
   .dhs .n{font-size:15px}
-  .day-header-card > div:last-child{width:100%;justify-content:flex-start}
+  .dhs .l{font-size:9px}
+  .day-header-card > div:last-child{width:100%;gap:6px}
+  .day-header-card > div:last-child .btn{font-size:11px;padding:5px 8px}
 
-  /* Timeline */
-  .tl-item{gap:10px;padding:10px 8px 10px 0}
-  .tl-dot{width:34px;height:34px;font-size:16px}
-  .tl-card{padding:10px 12px}
+  /* ── Timeline ── */
+  .timeline::before{left:17px}
+  .tl-item{gap:8px;padding:8px 0}
+  .tl-dot{width:34px;height:34px;font-size:16px;flex-shrink:0}
+  .tl-card{padding:10px 12px;min-width:0}
   .tl-title{font-size:13px}
-  .tl-actions{opacity:1} /* always visible on mobile */
+  .tl-time{font-size:10px}
+  .tl-meta{font-size:11px;gap:8px}
+  .tl-actions{opacity:1;gap:4px}
+  .tl-actions .btn{font-size:11px;padding:4px 7px}
 
-  /* Act form */
+  /* ── Activity form ── */
   .act-form{padding:12px}
-  /* form stays below timeline on mobile */
+  .act-form-title{font-size:13px;margin-bottom:10px}
 
-  /* Panels */
+  /* ── Panels ── */
+  .panel-header{padding:10px 12px}
   .panel-body{padding:12px}
-  .panel-header{padding:10px 14px}
+  .panel-title{font-size:14px}
 
-  /* Charts */
+  /* ── Charts ── */
   .chart-card{padding:12px}
-  .bar-label{width:70px;font-size:10px}
-  .bar-val{width:55px;font-size:10px}
+  .chart-title{font-size:12px;margin-bottom:10px}
+  .bar-row{gap:6px;margin-bottom:8px}
+  .bar-label{width:75px;font-size:10px}
+  .bar-val{width:52px;font-size:10px}
 
-  /* Budget vs real */
-  .bvr-row{flex-wrap:wrap;gap:8px;padding:10px 0}
-  .bvr-cat{width:100%;font-size:12px}
-  .bvr-val{width:55px;font-size:10px}
+  /* ── Pres vs Real ── */
+  .bvr-row{flex-wrap:wrap;gap:6px;padding:10px 0}
+  .bvr-cat{width:100%;font-size:12px;font-weight:700}
+  .bvr-bars{width:100%}
+  .bvr-val{width:52px;font-size:10px}
 
-  /* Modals */
-  .overlay{padding:10px;align-items:flex-end}
-  .modal{border-radius:16px 16px 0 0;max-height:85vh;padding:20px 16px}
-  .modal h2{font-size:17px}
+  /* ── Modals: bottom sheet ── */
+  .overlay{padding:0;align-items:flex-end}
+  .modal{border-radius:20px 20px 0 0;max-height:90vh;padding:20px 16px 32px;width:100%;max-width:100%}
+  .modal h2{font-size:16px;margin-bottom:16px}
+  .modal-footer{flex-wrap:wrap;gap:8px}
+  .modal-footer .btn{flex:1;min-width:80px;text-align:center;justify-content:center}
 
-  /* Toasts */
-  #toasts{bottom:16px;right:12px;left:12px}
+  /* ── Confirm dialog ── */
+  #dlgConfirm .overlay{align-items:center;padding:16px}
+  .confirm-box{width:100%;max-width:340px}
+
+  /* ── Toasts ── */
+  #toasts{bottom:12px;right:10px;left:10px}
   .toast{max-width:100%}
 
-  /* Resumen timeline */
-  .logo-wrapper{width:260px}
+  /* ── Share options ── */
+  .share-opt{padding:10px 12px;gap:10px}
+  .share-icon{font-size:20px;width:30px}
+  .share-info .name{font-size:13px}
+  .share-info .desc{font-size:11px}
 
-  /* Share opts */
-  .share-opt{padding:10px}
-  .share-icon{font-size:20px;width:32px}
-}
+  /* ── Sheets modal ── */
+  .code-snippet{font-size:10px}
 
-/* ── MOBILE BOTTOM NAV ── */
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--s1);border-top:1px solid var(--border);padding:4px 0 env(safe-area-inset-bottom,4px)}
-.mnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:none;border:none;color:var(--text3);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:color .15s;font-family:'Inter',sans-serif}
-.mnav-btn span:first-child{font-size:18px}
-.mnav-btn.active{color:var(--blue)}
-
-@media(max-width:600px){
-  .mobile-nav{display:none} /* keep top tabs for now */
-  .container{padding-bottom:16px}
+  /* ── Resumen summary card ── */
+  #resumenContent .day-header-num{font-size:18px}
 }
 
 /* ════════════════════════════════════════
-   RESPONSIVE — MÓVIL PEQUEÑO (≤380px)
+   RESPONSIVE — MÓVIL PEQUEÑO (≤390px)
 ════════════════════════════════════════ */
-@media(max-width:380px){
-  .nav-tab{font-size:10px;padding:5px 7px}
+@media(max-width:390px){
+  .nav-tab{font-size:11px;padding:6px 9px}
   .stat-val{font-size:15px}
-  .txt-aventura{font-size:13px}
-  .txt-360{font-size:13px}
-  .topbar-right .btn-sm span, .topbar-right .btn-sm{font-size:9px;padding:2px 5px}
+  .stat-card{padding:10px 8px}
+  .logo-mobile-a,.logo-mobile-3{font-size:13px}
+  .topbar-right .btn{font-size:10px;padding:4px 7px}
+  .tl-card{padding:8px 10px}
+  .day-chip{min-width:52px;padding:6px 6px}
 }
 </style>
 </head>
@@ -1081,9 +1112,19 @@ const DB = {
 
 // ── CONFIG ─────────────────────────────────────────────────────────
 const CFG = {
-  key: '', sheetId: '', scriptUrl: '', secret: '',
+  key: '', sheetId: '',
+  // Default connection — auto-connects on first load
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbxkNporvgUitahCpfvumKysZ2vjenNzvdFuro5iGGhsZUr-LanFTfbZeEJcc_GFWWaYEg/exec',
+  secret: 'dperezapp',
   load() {
-    try { const c = JSON.parse((typeof localStorage!=='undefined' && localStorage.getItem('a360_cfg')) || '{}'); Object.assign(this, c); } catch(e) {}
+    try {
+      const c = JSON.parse((typeof localStorage!=='undefined' && localStorage.getItem('a360_cfg')) || '{}');
+      // Only override defaults if user has explicitly saved config
+      if (c.scriptUrl) this.scriptUrl = c.scriptUrl;
+      if (c.secret)    this.secret    = c.secret;
+      if (c.key)       this.key       = c.key;
+      if (c.sheetId)   this.sheetId   = c.sheetId;
+    } catch(e) {}
   },
   save() {
     try { localStorage.setItem('a360_cfg', JSON.stringify({ key: this.key, sheetId: this.sheetId, scriptUrl: this.scriptUrl, secret: this.secret })); } catch(e) {}
