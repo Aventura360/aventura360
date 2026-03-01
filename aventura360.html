@@ -366,15 +366,7 @@ textarea.inp{min-height:72px;resize:vertical}
   .itin-layout{grid-template-columns:1fr}
   .charts-grid{grid-template-columns:1fr}
 
-  /* ── Expense table → card list ── */
-  .exp-table{width:100%}
-  .exp-table thead{display:none}
-  .exp-table tbody tr{display:block;border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;padding:12px;background:var(--s1)}
-  .exp-table tbody tr:hover td{background:transparent}
-  .exp-table td{display:grid;grid-template-columns:80px 1fr;align-items:start;padding:3px 0;border:none;font-size:12px;gap:6px}
-  .exp-table td:first-child{display:block;grid-template-columns:unset;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:6px;font-size:13px}
-  .exp-table td:last-child{display:flex;grid-template-columns:unset;justify-content:flex-end;padding-top:8px}
-  .exp-table td[data-label]:not([data-label=""])::before{content:attr(data-label);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding-top:2px}
+  /* ── Expense table: mobile handled by JS card render ── */
 
   /* ── Cat tabs ── */
   .cat-tabs{padding:6px 8px 0;gap:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
@@ -1058,23 +1050,7 @@ textarea.inp{min-height:72px;resize:vertical}
 <div id="toasts"></div>
 
 <!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-nav" id="mobileNav">
-  <button class="mnav-btn active" onclick="App.switchTabMobile('resumen',this)">
-    <span>🏠</span><span>Resumen</span>
-  </button>
-  <button class="mnav-btn" onclick="App.switchTabMobile('itinerario',this)">
-    <span>🗓</span><span>Itinerario</span>
-  </button>
-  <button class="mnav-btn" onclick="App.switchTabMobile('gastos',this)">
-    <span>💸</span><span>Gastos</span>
-  </button>
-  <button class="mnav-btn" onclick="App.switchTabMobile('graficas',this)">
-    <span>📊</span><span>Gráficas</span>
-  </button>
-  <button class="mnav-btn" onclick="App.switchTabMobile('presupuesto',this)">
-    <span>🎯</span><span>Pres.</span>
-  </button>
-</nav>
+
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
@@ -1770,37 +1746,69 @@ const Expenses = {
       .reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
     document.getElementById('listTotal').textContent = State.showAmounts ? 'Total: ' + fmt(total) : '';
 
-    container.innerHTML = '<div style="overflow-x:auto"><table class="exp-table"><thead><tr><th>Descripción</th><th>Categoría</th><th>Estado</th><th>Importe</th><th>Fecha</th><th></th></tr></thead><tbody>' +
-      exps.map(e => {
+    const isMobile = window.innerWidth < 600;
+    if (isMobile) {
+      // ── Mobile: card layout ──────────────────────────────────────
+      container.innerHTML = exps.map(e => {
         const c = CATS[e.categoria] || { icon: '📌', label: e.categoria, color: 'var(--text2)' };
         const statusClass = 'status-' + (e.estado || 'pendiente');
         const dispAmt = toDisplay(e.importe, e.moneda);
-        const originalAmt = State.showAmounts && e.moneda !== State.displayCur ? ` <span style="font-size:10px;color:var(--text3)">(${fmtNum(e.importe)} ${e.moneda})</span>` : '';
-        // Build time info line (works for both expenses and activities)
-        const tStart = e.dep_time || e.hora_inicio || '';
-        const tEnd   = e.arr_time || e.hora_fin   || '';
-        const dateEnd = e.arr_date && e.arr_date !== e.fecha ? ` <span style="font-size:10px;color:var(--text3)">(llega ${e.arr_date})</span>` : '';
-        const timeStr = tStart ? `<div style="font-size:11px;color:var(--blue);font-family:'Space Mono',monospace;margin-top:2px">🕐 ${tStart}${tEnd ? ' → ' + tEnd : ''}${dateEnd}</div>` : '';
-        const provStr = e.proveedor ? `<div style="font-size:11px;color:var(--text2)">${App.esc(e.proveedor)}${e.referencia ? ' · <span style=\'color:var(--text3)\'>' + App.esc(e.referencia) + '</span>' : ''}</div>` : '';
-        return `<tr>
-          <td data-label="">
-            <div style="font-weight:600">${App.esc(e.descripcion)}${e.adjunto ? ' <a href="' + App.esc(e.adjunto) + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none" title="Ver adjunto">📎</a>' : ''}</div>
-            ${provStr}${timeStr}
-          </td>
-          <td data-label="Categoría"><span class="cat-pill" style="background:${c.color}22;color:${c.color}">${c.icon} ${c.label}</span></td>
-          <td data-label="Estado"><span class="status-dot ${statusClass}">${e.estado || 'pendiente'}</span></td>
-          <td data-label="Importe"><span class="mono">${State.showAmounts ? fmt(dispAmt) : '···'}</span>${originalAmt}</td>
-          <td data-label="Fecha" style="color:var(--text2);font-size:12px">${e.fecha || '—'}</td>
-          <td data-label="">
-            ${e._fromActivity
-              ? `<button class="btn btn-ghost btn-xs" onclick="App.goToActivity('${e.id.replace('act_','')}')" title="Ver en Itinerario">🗓 Ver</button>`
-              : `<div style="display:flex;gap:4px">
-                  <button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
-                  <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>
-                </div>`}
-          </td>
-        </tr>`;
-      }).join('') + '</tbody></table></div>';
+        const amtStr  = State.showAmounts ? fmt(dispAmt) : '···';
+        const origStr = State.showAmounts && e.moneda !== State.displayCur ? ` <span style="font-size:10px;color:var(--text3)">(${fmtNum(e.importe)} ${e.moneda})</span>` : '';
+        const tStart  = e.dep_time || e.hora_inicio || '';
+        const tEnd    = e.arr_time || e.hora_fin    || '';
+        const dateEnd = e.arr_date && e.arr_date !== e.fecha ? ` (llega ${e.arr_date})` : '';
+        const timeStr = tStart ? `<div style="font-size:11px;color:var(--blue);font-family:'Space Mono',monospace;margin-top:3px">🕐 ${tStart}${tEnd ? ' → '+tEnd : ''}${dateEnd}</div>` : '';
+        const adjStr  = e.adjunto ? ` <a href="${App.esc(e.adjunto)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none">📎</a>` : '';
+        const actions = e._fromActivity
+          ? `<button class="btn btn-ghost btn-xs" onclick="App.goToActivity('${e.id.replace('act_','')}')">🗓 Ver</button>`
+          : `<button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button>
+             <button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button>`;
+        return `<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:700;font-size:14px">${App.esc(e.descripcion)}${adjStr}</div>
+              ${e.proveedor ? `<div style="font-size:11px;color:var(--text3);margin-top:2px">${App.esc(e.proveedor)}</div>` : ''}
+              ${timeStr}
+            </div>
+            <div style="font-weight:700;font-size:15px;font-family:'Space Mono',monospace;color:var(--text);flex-shrink:0;margin-left:10px">${amtStr}${origStr}</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="cat-pill" style="background:${c.color}22;color:${c.color};font-size:11px">${c.icon} ${c.label}</span>
+              <span class="status-dot ${statusClass}" style="font-size:11px">${e.estado || 'pendiente'}</span>
+              ${e.fecha ? `<span style="font-size:11px;color:var(--text3)">${e.fecha}</span>` : ''}
+            </div>
+            <div style="display:flex;gap:4px">${actions}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      // ── Desktop: table layout ────────────────────────────────────
+      container.innerHTML = '<div style="overflow-x:auto"><table class="exp-table"><thead><tr><th>Descripción</th><th>Categoría</th><th>Estado</th><th>Importe</th><th>Fecha</th><th></th></tr></thead><tbody>' +
+        exps.map(e => {
+          const c = CATS[e.categoria] || { icon: '📌', label: e.categoria, color: 'var(--text2)' };
+          const statusClass = 'status-' + (e.estado || 'pendiente');
+          const dispAmt = toDisplay(e.importe, e.moneda);
+          const originalAmt = State.showAmounts && e.moneda !== State.displayCur ? ` <span style="font-size:10px;color:var(--text3)">(${fmtNum(e.importe)} ${e.moneda})</span>` : '';
+          const tStart = e.dep_time || e.hora_inicio || '';
+          const tEnd   = e.arr_time || e.hora_fin   || '';
+          const dateEnd = e.arr_date && e.arr_date !== e.fecha ? ` <span style="font-size:10px;color:var(--text3)">(llega ${e.arr_date})</span>` : '';
+          const timeStr = tStart ? `<div style="font-size:11px;color:var(--blue);font-family:'Space Mono',monospace;margin-top:2px">🕐 ${tStart}${tEnd ? ' → ' + tEnd : ''}${dateEnd}</div>` : '';
+          const provStr = e.proveedor ? `<div style="font-size:11px;color:var(--text2)">${App.esc(e.proveedor)}${e.referencia ? ' · ' + App.esc(e.referencia) : ''}</div>` : '';
+          return `<tr>
+            <td><div style="font-weight:600">${App.esc(e.descripcion)}${e.adjunto ? ' <a href="'+App.esc(e.adjunto)+'" target="_blank" style="color:var(--blue);text-decoration:none">📎</a>' : ''}</div>${provStr}${timeStr}</td>
+            <td><span class="cat-pill" style="background:${c.color}22;color:${c.color}">${c.icon} ${c.label}</span></td>
+            <td><span class="status-dot ${statusClass}">${e.estado || 'pendiente'}</span></td>
+            <td><span class="mono">${State.showAmounts ? fmt(dispAmt) : '···'}</span>${originalAmt}</td>
+            <td style="color:var(--text2);font-size:12px">${e.fecha || '—'}</td>
+            <td>${e._fromActivity
+              ? `<button class="btn btn-ghost btn-xs" onclick="App.goToActivity('${e.id.replace('act_','')}')">🗓 Ver</button>`
+              : `<div style="display:flex;gap:4px"><button class="btn btn-ghost btn-xs" onclick="Expenses.edit('${e.id}')">✏</button><button class="btn btn-danger btn-xs" onclick="Expenses.delete('${e.id}')">🗑</button></div>`}
+            </td>
+          </tr>`;
+        }).join('') + '</tbody></table></div>';
+    }
   },
 
   renderBadges() {
