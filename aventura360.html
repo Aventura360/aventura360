@@ -717,6 +717,14 @@ textarea.inp{min-height:72px;resize:vertical}
               <label>Notas</label>
               <textarea class="inp" id="fNotes" placeholder="Cualquier nota adicional…"></textarea>
             </div>
+            <div class="fgroup">
+              <label>📎 Adjunto (URL de Google Drive, Dropbox…)</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input class="inp" id="fAdjunto" placeholder="https://drive.google.com/…" style="flex:1" oninput="document.getElementById('btnPreviewAdj').style.display=this.value?'':' none'">
+                <button type="button" class="btn btn-ghost btn-sm" id="btnPreviewAdj" onclick="Expenses.previewAdj()" style="display:none;flex-shrink:0" title="Ver adjunto">👁</button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:3px">Sube el archivo a Drive → clic derecho → Obtener enlace → pégalo aquí</div>
+            </div>
             <button class="btn btn-primary" onclick="Expenses.save()" style="width:100%">
               <span id="btnSaveText">💾 Guardar Gasto</span>
             </button>
@@ -836,8 +844,12 @@ textarea.inp{min-height:72px;resize:vertical}
             </div>
           </div>
           <div class="fgroup">
-            <label>URL</label>
-            <input class="inp" id="actUrl" placeholder="https://…">
+            <label>📎 Adjunto (URL de Drive, Dropbox, reserva…)</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input class="inp" id="actUrl" placeholder="https://drive.google.com/…" style="flex:1" oninput="document.getElementById('btnPreviewActAdj').style.display=this.value?'':' none'">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="(function(){var u=document.getElementById('actUrl').value.trim();if(u)window.open(u,'_blank')})()" title="Ver adjunto" id="btnPreviewActAdj" style="display:none;flex-shrink:0">👁</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">Sube a Drive → Obtener enlace → pega aquí</div>
           </div>
           <div class="fgroup">
             <label>Notas</label>
@@ -1352,6 +1364,7 @@ const App = {
         arr_date:     a.arr_date    || '',
         proveedor:    a.lugar       || '',
         referencia:   a.referencia  || '',
+        adjunto:      a.url         || '',
         _fromActivity: true,
       }));
   },
@@ -1722,7 +1735,7 @@ const Expenses = {
         const provStr = e.proveedor ? `<div style="font-size:11px;color:var(--text2)">${App.esc(e.proveedor)}${e.referencia ? ' · <span style=\'color:var(--text3)\'>' + App.esc(e.referencia) + '</span>' : ''}</div>` : '';
         return `<tr>
           <td data-label="">
-            <div style="font-weight:600">${App.esc(e.descripcion)}</div>
+            <div style="font-weight:600">${App.esc(e.descripcion)}${e.adjunto ? ' <a href="' + App.esc(e.adjunto) + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none" title="Ver adjunto">📎</a>' : ''}</div>
             ${provStr}${timeStr}
           </td>
           <td data-label="Categoría"><span class="cat-pill" style="background:${c.color}22;color:${c.color}">${c.icon} ${c.label}</span></td>
@@ -1789,6 +1802,7 @@ const Expenses = {
       proveedor:   document.getElementById('fProvider').value.trim(),
       referencia:  document.getElementById('fRef').value.trim(),
       notas:       document.getElementById('fNotes').value.trim(),
+      adjunto:     document.getElementById('fAdjunto').value.trim(),
       dep_date:    document.getElementById('fDepDate').value,
       dep_time:    document.getElementById('fDepTime').value,
       arr_date:    document.getElementById('fArrDate').value,
@@ -1804,6 +1818,11 @@ const Expenses = {
     this.cancelEdit();
     App.render();
     App.toast(editId ? 'Gasto actualizado ✓' : 'Gasto guardado ✓', 'success');
+  },
+
+  previewAdj() {
+    const url = document.getElementById('fAdjunto').value.trim();
+    if (url) window.open(url, '_blank');
   },
 
   edit(id) {
@@ -1824,6 +1843,9 @@ const Expenses = {
     Expenses.onCatChange();
     document.getElementById('fRef').value      = e.referencia || '';
     document.getElementById('fNotes').value    = e.notas || '';
+    document.getElementById('fAdjunto').value  = e.adjunto || '';
+    const adjBtn = document.getElementById('btnPreviewAdj');
+    if (adjBtn) adjBtn.style.display = e.adjunto ? '' : 'none';
     document.getElementById('expFormTitle').textContent = '✏️ Editando Gasto';
     document.getElementById('btnSaveText').textContent  = '💾 Actualizar Gasto';
     document.getElementById('btnCancelEdit').style.display = '';
@@ -1849,6 +1871,9 @@ const Expenses = {
     document.getElementById('fProvider').value = '';
     document.getElementById('fRef').value     = '';
     document.getElementById('fNotes').value   = '';
+    document.getElementById('fAdjunto').value = '';
+    const adjBtn = document.getElementById('btnPreviewAdj');
+    if (adjBtn) adjBtn.style.display = 'none';
     document.getElementById('fCat').value     = 'vuelos';
     document.getElementById('fDepDate').value  = '';
     document.getElementById('fDepTime').value  = '';
@@ -1987,7 +2012,7 @@ const Itin = {
         '</div>' +
         '<div class="tl-card">' +
           '<div class="tl-card-header">' +
-            '<div>' + timeHtml + '<div class="tl-title">' + App.esc(a.titulo) + '</div></div>' +
+            '<div>' + timeHtml + '<div class="tl-title">' + App.esc(a.titulo) + (a.url ? ' <a href="' + App.esc(a.url) + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none" title="Ver adjunto">📎</a>' : '') + '</div></div>' +
             '<div style="display:flex;gap:6px;align-items:flex-start;flex-shrink:0">' +
               '<span class="tl-status ' + status + '">' + (sLabel[status] || status) + '</span>' +
               '<div class="tl-actions">' +
