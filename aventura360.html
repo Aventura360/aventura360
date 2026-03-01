@@ -371,10 +371,8 @@ textarea.inp{min-height:72px;resize:vertical}
 
   /* ── Expense table: mobile handled by JS card render ── */
 
-  /* ── Cat tabs ── */
-  .cat-tabs{padding:6px 8px 0;gap:3px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
-  .cat-tabs::-webkit-scrollbar{display:none}
-  .cat-tab{flex-shrink:0;padding:5px 9px;font-size:11px}
+  /* ── Cat tabs: hidden on mobile, replaced by select ── */
+  .cat-tabs{display:none}
 
   /* ── Day nav chips ── */
   .day-nav{gap:6px;padding-bottom:10px}
@@ -628,6 +626,7 @@ textarea.inp{min-height:72px;resize:vertical}
     <div class="layout2">
       <!-- Left: list -->
       <div>
+        <!-- Desktop tabs -->
         <div class="cat-tabs" id="catTabs">
           <div class="cat-tab active" data-cat="todas" onclick="Expenses.filterCat('todas',this)">🗂 Todas <span class="cnt" id="cnt-todas">0</span></div>
           <div class="cat-tab" data-cat="vuelos" onclick="Expenses.filterCat('vuelos',this)">✈️ Vuelos <span class="cnt" id="cnt-vuelos">0</span></div>
@@ -637,13 +636,25 @@ textarea.inp{min-height:72px;resize:vertical}
           <div class="cat-tab" data-cat="comidas" onclick="Expenses.filterCat('comidas',this)">🍽️ Comidas <span class="cnt" id="cnt-comidas">0</span></div>
           <div class="cat-tab" data-cat="seguros" onclick="Expenses.filterCat('seguros',this)">🛡️ Seguros <span class="cnt" id="cnt-seguros">0</span></div>
         </div>
-        <div class="panel" style="border-radius:0 var(--r) var(--r) var(--r)">
-          <div style="padding:14px 18px;border-bottom:1px solid var(--border)">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px">
-              <div class="panel-title" id="listTitle" style="flex:1">Todos los Gastos</div>
-              <span id="listTotal" style="font-size:13px;color:var(--text2);font-weight:600;white-space:nowrap;flex-shrink:0"></span>
-            </div>
-            <input class="inp" id="searchInp" placeholder="🔍 Buscar…" style="width:100%;padding:5px 10px;font-size:12px;box-sizing:border-box" oninput="Expenses.render()">
+        <!-- Mobile filter select (hidden on desktop) -->
+        <div id="catSelectWrap" style="display:none;padding:8px 0">
+          <select class="inp" id="catSelect" onchange="Expenses.filterCatMobile(this.value)" style="width:100%;font-size:13px;padding:8px 10px">
+            <option value="todas">🗂 Todas</option>
+            <option value="vuelos">✈️ Vuelos</option>
+            <option value="hoteles">🏨 Hoteles</option>
+            <option value="transfers">🚗 Transfers</option>
+            <option value="excursiones">🗺️ Excursiones</option>
+            <option value="comidas">🍽️ Comidas</option>
+            <option value="seguros">🛡️ Seguros</option>
+          </select>
+        </div>
+        <div class="panel" style="border-radius:var(--r)">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+            <div class="panel-title" id="listTitle" style="flex:1;font-size:14px">Todos los Gastos</div>
+            <span id="listTotal" style="font-size:13px;color:var(--text2);font-weight:600;white-space:nowrap"></span>
+          </div>
+          <div style="padding:8px 14px;border-bottom:1px solid var(--border)">
+            <input class="inp" id="searchInp" placeholder="🔍 Buscar…" style="width:100%;padding:6px 10px;font-size:12px;box-sizing:border-box" oninput="Expenses.render()">
           </div>
           <div id="expContainer"></div>
         </div>
@@ -1705,6 +1716,11 @@ const Expenses = {
     this.render();
   },
 
+  filterCatMobile(cat) {
+    State.catFilter = cat;
+    this.render();
+  },
+
   render() {
     const t = App.currentTrip();
     const container = document.getElementById('expContainer');
@@ -1823,6 +1839,27 @@ const Expenses = {
       const el = document.getElementById('cnt-' + c);
       if (el) el.textContent = exps.filter(e => e.categoria === c).length;
     });
+    // Mobile: show select, hide tabs; Desktop: show tabs, hide select
+    const isMobile = window.innerWidth < 600;
+    const tabs = document.getElementById('catTabs');
+    const sel  = document.getElementById('catSelectWrap');
+    if (tabs) tabs.style.display = isMobile ? 'none' : '';
+    if (sel)  sel.style.display  = isMobile ? 'block' : 'none';
+    // Sync select value
+    const selectEl = document.getElementById('catSelect');
+    if (selectEl) selectEl.value = State.catFilter;
+    // Update mobile select options with counts
+    if (selectEl) {
+      const counts = { todas: exps.length };
+      Object.keys(CATS).forEach(c => { counts[c] = exps.filter(e => e.categoria === c).length; });
+      selectEl.options[0].text = `🗂 Todas (${counts.todas})`;
+      const labels = ['vuelos','hoteles','transfers','excursiones','comidas','seguros'];
+      const icons  = ['✈️','🏨','🚗','🗺️','🍽️','🛡️'];
+      const names  = ['Vuelos','Hoteles','Transfers','Excursiones','Comidas','Seguros'];
+      labels.forEach((cat, i) => {
+        if (selectEl.options[i+1]) selectEl.options[i+1].text = `${icons[i]} ${names[i]} (${counts[cat]||0})`;
+      });
+    }
   },
 
   updateConvert() {
