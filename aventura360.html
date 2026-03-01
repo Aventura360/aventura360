@@ -1319,6 +1319,26 @@ const App = {
       </div>`;
   },
 
+  // Returns activity costs as expense-like objects for unified stats
+  getActsAsExpenses(tripId) {
+    const t = DB.trips.find(x => x.id === tripId);
+    const moneda = t ? (t.moneda || 'EUR') : 'EUR';
+    return DB.activities
+      .filter(a => a.viaje_id === tripId && (a.coste || 0) > 0)
+      .map(a => ({
+        id:          'act_' + a.id,
+        viaje_id:    a.viaje_id,
+        descripcion: a.titulo,
+        categoria:   a.tipo || 'actividad',
+        estado:      a.estado || 'pendiente',
+        importe:     a.coste || 0,
+        moneda:      moneda,
+        importe_base: a.coste || 0,
+        fecha:       a.fecha || '',
+        _fromActivity: true,
+      }));
+  },
+
   renderStats() {
     const t = this.currentTrip();
     const ids = ['sBudget','sSpent','sAvail','sPaid','sDays','sItems','sSpentPct','sPaidSub','sDaysSub'];
@@ -1331,9 +1351,12 @@ const App = {
       return;
     }
 
-    const exps = DB.expenses.filter(e => e.viaje_id === t.id && e.estado !== 'cancelado');
-    const paid = DB.expenses.filter(e => e.viaje_id === t.id && e.estado === 'pagado');
-    const all  = DB.expenses.filter(e => e.viaje_id === t.id);
+    const actExps = App.getActsAsExpenses(t.id);
+    const exps = [...DB.expenses.filter(e => e.viaje_id === t.id && e.estado !== 'cancelado'),
+                  ...actExps.filter(a => a.estado !== 'cancelado')];
+    const paid = [...DB.expenses.filter(e => e.viaje_id === t.id && e.estado === 'pagado'),
+                  ...actExps.filter(a => a.estado === 'pagado')];
+    const all  = [...DB.expenses.filter(e => e.viaje_id === t.id), ...actExps];
 
     const toDisplay = (amt, cur) => {
       const eur = amt / (State.rates[cur] || 1);
@@ -1648,7 +1671,9 @@ const Expenses = {
       return;
     }
 
-    const total = exps.filter(e => e.estado !== 'cancelado').reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
+    const actExpsForTotal = App.getActsAsExpenses(t.id);
+    const total = [...exps.filter(e => e.estado !== 'cancelado'), ...actExpsForTotal.filter(a => a.estado !== 'cancelado')]
+      .reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
     document.getElementById('listTotal').textContent = State.showAmounts ? 'Total: ' + fmt(total) : '';
 
     container.innerHTML = '<div style="overflow-x:auto"><table class="exp-table"><thead><tr><th>Descripción</th><th>Categoría</th><th>Estado</th><th>Importe</th><th>Fecha</th><th></th></tr></thead><tbody>' +
@@ -2100,7 +2125,8 @@ const Charts = {
     const t = App.currentTrip();
     const el = document.getElementById('chartCat');
     if (!t) { el.innerHTML = '<div class="empty-state" style="padding:20px"><p>Selecciona un viaje</p></div>'; return; }
-    const exps = DB.expenses.filter(e => e.viaje_id === t.id && e.estado !== 'cancelado');
+    const exps = [...DB.expenses.filter(e => e.viaje_id === t.id && e.estado !== 'cancelado'),
+                  ...App.getActsAsExpenses(t.id).filter(a => a.estado !== 'cancelado')];
     const totals = {};
     exps.forEach(e => {
       totals[e.categoria] = (totals[e.categoria] || 0) + this.toDisplay(e.importe, e.moneda);
@@ -2114,7 +2140,7 @@ const Charts = {
     const t = App.currentTrip();
     const el = document.getElementById('chartStatus');
     if (!t) { el.innerHTML = '<div class="empty-state" style="padding:20px"><p>Selecciona un viaje</p></div>'; return; }
-    const exps = DB.expenses.filter(e => e.viaje_id === t.id);
+    const exps = [...DB.expenses.filter(e => e.viaje_id === t.id), ...App.getActsAsExpenses(t.id)];
     const statuses = { pagado: { label: 'Pagado', color: 'var(--green)' }, reservado: { label: 'Reservado', color: 'var(--blue)' }, pendiente: { label: 'Pendiente', color: 'var(--yellow)' }, cancelado: { label: 'Cancelado', color: 'var(--text3)' } };
     const items = Object.entries(statuses).map(([k, v]) => ({
       label: v.label, icon: '', val: exps.filter(e => e.estado === k).reduce((s, e) => s + this.toDisplay(e.importe, e.moneda), 0), color: v.color
@@ -2127,7 +2153,8 @@ const Charts = {
     const el = document.getElementById('chartDate');
     if (!t) { el.innerHTML = '<div class="empty-state" style="padding:20px"><p>Selecciona un viaje</p></div>'; return; }
     const byDate = {};
-    DB.expenses.filter(e => e.viaje_id === t.id && e.estado !== 'cancelado' && e.fecha).forEach(e => {
+    [...DB.expenses.filter(e => e.viaje_id === t.id && e.estado !== 'cancelado' && e.fecha),
+     ...App.getActsAsExpenses(t.id).filter(a => a.estado !== 'cancelado' && a.fecha)].forEach(e => {
       byDate[e.fecha] = (byDate[e.fecha] || 0) + this.toDisplay(e.importe, e.moneda);
     });
     const items = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0]))
@@ -2173,7 +2200,8 @@ const Charts = {
 
     const rows = Object.entries(CATS).map(([cat, info]) => {
       const plan = toDisplay(t['pres_' + cat] || 0, t.moneda);
-      const real = DB.expenses.filter(e => e.viaje_id === t.id && e.categoria === cat && e.estado !== 'cancelado')
+      const real = [...DB.expenses.filter(e => e.viaje_id === t.id && e.categoria === cat && e.estado !== 'cancelado'),
+        ...App.getActsAsExpenses(t.id).filter(a => a.categoria === cat && a.estado !== 'cancelado')]
         .reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
       const max = Math.max(plan, real, 1);
       const pct = plan > 0 ? Math.min(real / plan * 100, 200) : 0;
@@ -2226,7 +2254,9 @@ const Charts = {
     const fmt = n => fmtNum(n);
     const items = Object.entries(CATS).map(([cat, info]) => {
       const plan = toDisplay(t['pres_' + cat] || 0, t.moneda);
-      const real = DB.expenses.filter(e => e.viaje_id === t.id && e.categoria === cat && e.estado !== 'cancelado').reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
+      const real = [...DB.expenses.filter(e => e.viaje_id === t.id && e.categoria === cat && e.estado !== 'cancelado'),
+        ...App.getActsAsExpenses(t.id).filter(a => a.categoria === cat && a.estado !== 'cancelado')]
+        .reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
       return { cat, info, plan, real };
     }).filter(x => x.plan > 0 || x.real > 0);
     const max = Math.max(...items.flatMap(x => [x.plan, x.real]), 1);
@@ -2256,7 +2286,9 @@ const Charts = {
     const toDisplay = (amt, cur) => (amt / (State.rates[cur] || 1)) * (State.rates[State.displayCur] || 1);
     const items = Object.entries(CATS).map(([cat, info]) => {
       const plan = toDisplay(t['pres_' + cat] || 0, t.moneda);
-      const real = DB.expenses.filter(e => e.viaje_id === t.id && e.categoria === cat && e.estado !== 'cancelado').reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
+      const real = [...DB.expenses.filter(e => e.viaje_id === t.id && e.categoria === cat && e.estado !== 'cancelado'),
+        ...App.getActsAsExpenses(t.id).filter(a => a.categoria === cat && a.estado !== 'cancelado')]
+        .reduce((s, e) => s + toDisplay(e.importe, e.moneda), 0);
       return { info, plan, real, pct: plan > 0 ? Math.min(real / plan * 100, 200) : 0 };
     }).filter(x => x.plan > 0);
     el.innerHTML = items.map(x => {
