@@ -2,56 +2,42 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aventura360 — Planificador de Viajes</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:       #080c18;
-  --s1:       #0f1524;
-  --s2:       #161e30;
-  --s3:       #1d2640;
-  --border:   rgba(255,255,255,0.08);
-  --border2:  rgba(255,255,255,0.14);
-  --text:     #e8edf8;
-  --text2:    #7a88a8;
-  --text3:    #3d4d68;
-  --blue:     #4f8ef7;
-  --purple:   #7c5cfa;
-  --green:    #10d48e;
-  --yellow:   #f0b429;
-  --red:      #f45b7a;
-  --sky:      #38bdf8;
-  --orange:   #fb923c;
-  --r:        12px;
-  --r2:       20px;
+  --bg: #080c18; --s1: #0f1524; --s2: #161e30; --s3: #1d2640;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --text: #e8edf8; --text2: #7a88a8; --text3: #3d4d68;
+  --blue: #4f8ef7; --purple: #7c5cfa; --green: #10d48e;
+  --r: 12px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow-x:hidden}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
 
-/* ── TOPBAR ACTUALIZADA ── */
+/* ── BARRA SUPERIOR CORREGIDA ── */
 .topbar {
   height: 76px;
   background: var(--s1);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Empuja el menú a la derecha */
+  justify-content: space-between; /* Esto separa Logo, Menú y Botones */
   padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 100;
+  gap: 20px;
 }
 
 .logo-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-shrink: 0;
 }
 
-/* ── NAV TABS EN EL TOPBAR ── */
+/* ── MENÚ DENTRO DE LA BARRA ── */
 .nav-tabs {
   display: flex;
   gap: 4px;
@@ -59,7 +45,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 4px;
-  margin-bottom: 0; /* Eliminado el margen inferior */
+  margin-bottom: 0; /* Eliminado el margen que lo bajaba */
+  flex: 0 1 auto;   /* Permite que el menú se ajuste */
 }
 
 .nav-tab {
@@ -72,7 +59,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   font-weight: 600;
   cursor: pointer;
   transition: all .15s;
-  font-family:'Inter',sans-serif;
 }
 
 .nav-tab.active {
@@ -80,30 +66,33 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   color: #fff;
 }
 
-.topbar-right-actions {
+.topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-/* ── RESTO DE ESTILOS MANTENIDOS ── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
-.btn-primary{background:var(--blue);color:#fff}
-.btn-ghost{background:var(--s2);color:var(--text);border:1px solid var(--border)}
-.container{max-width:1400px;margin:0 auto;padding:20px}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--r);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-ghost { background: var(--s2); color: var(--text); border: 1px solid var(--border); }
 
-/* Ajuste móvil */
-@media(max-width: 900px) {
-  .topbar {
-    height: auto;
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-  }
-  .nav-tabs {
-    width: 100%;
-    overflow-x: auto;
-  }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Ajuste para pantallas pequeñas */
+@media(max-width: 850px) {
+  .topbar { height: auto; flex-direction: column; padding: 15px; gap: 10px; }
+  .nav-tabs { width: 100%; justify-content: center; }
 }
 </style>
 </head>
@@ -115,29 +104,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   </div>
 
   <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="switchView('resumen')">Resumen</button>
-    <button class="nav-tab" onclick="switchView('itinerario')">Itinerario</button>
-    <button class="nav-tab" onclick="switchView('gastos')">Gastos</button>
-    <button class="nav-tab" onclick="switchView('mapa')">Mapa</button>
+    <button class="nav-tab active">Resumen</button>
+    <button class="nav-tab">Itinerario</button>
+    <button class="nav-tab">Gastos</button>
+    <button class="nav-tab">Mapa</button>
   </nav>
 
-  <div class="topbar-right-actions">
+  <div class="topbar-right">
     <button class="btn btn-ghost">Compartir</button>
-    <button class="btn btn-primary">+ Nuevo</button>
+    <button class="btn btn-primary">+ Nuevo Viaje</button>
   </div>
 </div>
 
 <div class="container">
-  </div>
-
-<script>
-  function switchView(viewId) {
-    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-    event.target.classList.add('active');
-    console.log("Cambiando a vista: " + viewId);
-    // Aquí iría tu lógica de App.switchView
-  }
-</script>
+  <p style="color:var(--text2); text-align:center; margin-top:40px;">Contenido del planificador...</p>
+</div>
 
 </body>
 </html>
